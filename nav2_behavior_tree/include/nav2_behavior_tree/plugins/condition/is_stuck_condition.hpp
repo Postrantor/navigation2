@@ -15,96 +15,117 @@
 #ifndef NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__IS_STUCK_CONDITION_HPP_
 #define NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__IS_STUCK_CONDITION_HPP_
 
-#include <string>
 #include <atomic>
 #include <deque>
+#include <string>
 
-#include "rclcpp/rclcpp.hpp"
 #include "behaviortree_cpp_v3/condition_node.h"
 #include "nav_msgs/msg/odometry.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace nav2_behavior_tree
 {
 
 /**
- * @brief A BT::ConditionNode that tracks robot odometry and returns SUCCESS
- * if robot is stuck somewhere and FAILURE otherwise
+ * @brief 一个BT::ConditionNode，用于追踪机器人的里程计，如果机器人被卡住，则返回SUCCESS，否则返回FAILURE
+ * A BT::ConditionNode that tracks robot odometry and returns SUCCESS if robot is stuck somewhere and FAILURE otherwise
  */
 class IsStuckCondition : public BT::ConditionNode
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::IsStuckCondition
+   * @brief nav2_behavior_tree::IsStuckCondition 的构造函数
+   * A constructor for nav2_behavior_tree::IsStuckCondition
+   * @param condition_name 此节点的 XML 标签名
+   * @param conf BT 节点配置
    * @param condition_name Name for the XML tag for this node
    * @param conf BT node configuration
    */
-  IsStuckCondition(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf);
+  IsStuckCondition(const std::string & condition_name, const BT::NodeConfiguration & conf);
 
+  // 删除默认构造函数
+  // Delete default constructor
   IsStuckCondition() = delete;
 
   /**
-   * @brief A destructor for nav2_behavior_tree::IsStuckCondition
+   * @brief nav2_behavior_tree::IsStuckCondition 的析构函数
+   * A destructor for nav2_behavior_tree::IsStuckCondition
    */
   ~IsStuckCondition() override;
 
   /**
-   * @brief Callback function for odom topic
+   * @brief odom 主题的回调函数
+   * Callback function for odom topic
+   * @param msg 指向 nav_msgs::msg::Odometry::SharedPtr 消息的共享指针
    * @param msg Shared pointer to nav_msgs::msg::Odometry::SharedPtr message
    */
   void onOdomReceived(const typename nav_msgs::msg::Odometry::SharedPtr msg);
 
   /**
-   * @brief The main override required by a BT action
+   * @brief 由 BT action 所需的主要覆盖
+   * The main override required by a BT action
+   * @return BT::NodeStatus tick 执行状态
    * @return BT::NodeStatus Status of tick execution
    */
   BT::NodeStatus tick() override;
 
   /**
-   * @brief Function to log status when robot is stuck/free
+   * @brief 当机器人被卡住/自由时记录状态的函数
+   * Function to log status when robot is stuck/free
    */
   void logStuck(const std::string & msg) const;
 
   /**
-   * @brief Function to approximate acceleration from the odom history
+   * @brief 从里程计历史记录中近似计算加速度的函数
+   * Function to approximate acceleration from the odom history
    */
   void updateStates();
 
   /**
-   * @brief Detect if robot bumped into something by checking for abnormal deceleration
+   * @brief 通过检查异常减速来检测机器人是否撞到了某物
+   * Detect if robot bumped into something by checking for abnormal deceleration
+   * @return bool 如果机器人被卡住，返回 true，否则返回 false
    * @return bool true if robot is stuck, false otherwise
    */
   bool isStuck();
 
   /**
-   * @brief Creates list of BT ports
+   * @brief 创建 BT 端口列表
+   * Creates list of BT ports
+   * @return BT::PortsList 包含特定于节点的端口
    * @return BT::PortsList Containing node-specific ports
    */
-  static BT::PortsList providedPorts() {return {};}
+  static BT::PortsList providedPorts() { return {}; }
 
 private:
+  // 将用于任何 ROS 操作的节点
   // The node that will be used for any ROS operations
   rclcpp::Node::SharedPtr node_;
   rclcpp::CallbackGroup::SharedPtr callback_group_;
   rclcpp::executors::SingleThreadedExecutor callback_group_executor_;
   std::thread callback_group_executor_thread;
 
+  // 是否卡住的原子布尔值
+  // Atomic boolean for whether the robot is stuck or not
   std::atomic<bool> is_stuck_;
 
-  // Listen to odometry
+  // 订阅里程计消息
+  // Subscribe to odometry messages
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+  // 存储里程计测量的历史记录
   // Store history of odometry measurements
   std::deque<nav_msgs::msg::Odometry> odom_history_;
   std::deque<nav_msgs::msg::Odometry>::size_type odom_history_size_;
 
+  // 计算出的状态
   // Calculated states
   double current_accel_;
 
-  // Robot specific paramters
+  // 机器人特定参数
+  // Robot specific parameters
   double brake_accel_limit_;
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__IS_STUCK_CONDITION_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__IS_STUCK_CONDITION_HPP_

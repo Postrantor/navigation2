@@ -24,21 +24,20 @@ namespace nav2_behavior_tree
 {
 
 /**
- * @brief A nav2_behavior_tree::BtServiceNode class that wraps nav2_msgs::srv::Empty
+ * @brief 一个封装了 nav2_msgs::srv::Empty 的 nav2_behavior_tree::BtServiceNode 类 (A nav2_behavior_tree::BtServiceNode class that wraps nav2_msgs::srv::Empty)
  */
 class ReinitializeGlobalLocalizationService : public BtServiceNode<std_srvs::srv::Empty>
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::ReinitializeGlobalLocalizationService
-   * @param service_node_name Service name this node creates a client for
-   * @param conf BT node configuration
+   * @brief nav2_behavior_tree::ReinitializeGlobalLocalizationService 的构造函数 (A constructor for nav2_behavior_tree::ReinitializeGlobalLocalizationService)
+   * @param service_node_name 这个节点创建客户端的服务名称 (Service name this node creates a client for)
+   * @param conf BT 节点配置 (BT node configuration)
    */
   ReinitializeGlobalLocalizationService(
-    const std::string & service_node_name,
-    const BT::NodeConfiguration & conf);
+    const std::string & service_node_name, const BT::NodeConfiguration & conf);
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__REINITIALIZE_GLOBAL_LOCALIZATION_SERVICE_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__REINITIALIZE_GLOBAL_LOCALIZATION_SERVICE_HPP_

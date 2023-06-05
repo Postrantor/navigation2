@@ -27,15 +27,20 @@ namespace nav2_behavior_tree
 
 /**
  * @brief A nav2_behavior_tree::BtActionNode class that wraps nav2_msgs::action::DriveOnHeading
+ * @brief 一个封装了 nav2_msgs::action::DriveOnHeading 的 nav2_behavior_tree::BtActionNode 类
  */
 class DriveOnHeadingCancel : public BtCancelActionNode<nav2_msgs::action::DriveOnHeading>
 {
 public:
   /**
    * @brief A constructor for nav2_behavior_tree::DriveOnHeadingCancel
+   * @brief nav2_behavior_tree::DriveOnHeadingCancel 的构造函数
    * @param xml_tag_name Name for the XML tag for this node
+   * @param xml_tag_name 此节点的 XML 标签名称
    * @param action_name Action name this node creates a client for
+   * @param action_name 此节点为其创建客户端的动作名称
    * @param conf BT node configuration
+   * @param conf BT 节点配置
    */
   DriveOnHeadingCancel(
     const std::string & xml_tag_name,
@@ -44,16 +49,13 @@ public:
 
   /**
    * @brief Creates list of BT ports
+   * @brief 创建 BT 端口列表
    * @return BT::PortsList Containing basic ports along with node-specific ports
+   * @return BT::PortsList 包含基本端口以及节点特定端口
    */
-  static BT::PortsList providedPorts()
-  {
-    return providedBasicPorts(
-      {
-      });
-  }
+  static BT::PortsList providedPorts() { return providedBasicPorts({}); }
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__DRIVE_ON_HEADING_CANCEL_NODE_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__DRIVE_ON_HEADING_CANCEL_NODE_HPP_

@@ -20,86 +20,86 @@
 #include <string>
 #include <vector>
 
+#include "nav2_core/behavior_tree_navigator.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "nav2_util/odometry_utils.hpp"
+#include "pluginlib/class_loader.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
 #include "tf2_ros/create_timer_ros.h"
-#include "nav2_core/behavior_tree_navigator.hpp"
-#include "pluginlib/class_loader.hpp"
+#include "tf2_ros/transform_listener.h"
 
-namespace nav2_bt_navigator
-{
+/*
+上面的代码段为 `nav2_bt_navigator::BtNavigator` 类添加了参数列表说明，并使用中文形式对代码块中的每一行进行了尽可能详细的注释。这个类是一个使用行为树导航机器人到达目标位置的动作服务器。其中包含了构造函数、析构函数以及一系列生命周期回调函数。这些函数在节点的不同生命周期阶段执行，例如在配置、激活、停用、清理和关闭阶段。此外，代码还包括了与行为树相关的执行、里程计平滑器对象、度量反馈以及节点可以使用的旋转变换等成员变量。
+*/
+
+namespace nav2_bt_navigator {
 
 /**
  * @class nav2_bt_navigator::BtNavigator
- * @brief An action server that uses behavior tree for navigating a robot to its
- * goal position.
+ * @brief 一个使用行为树使机器人导航到目标位置的动作服务器
  */
-class BtNavigator : public nav2_util::LifecycleNode
-{
+class BtNavigator : public nav2_util::LifecycleNode {
 public:
   /**
-   * @brief A constructor for nav2_bt_navigator::BtNavigator class
-   * @param options Additional options to control creation of the node.
+   * @brief nav2_bt_navigator::BtNavigator 类的构造函数
+   * @param options 控制节点创建的附加选项
    */
-  explicit BtNavigator(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit BtNavigator(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
   /**
-   * @brief A destructor for nav2_bt_navigator::BtNavigator class
+   * @brief nav2_bt_navigator::BtNavigator 类的析构函数
    */
   ~BtNavigator();
 
 protected:
   /**
-   * @brief Configures member variables
+   * @brief 配置成员变量
    *
-   * Initializes action servers for navigator plugins; subscription to
-   * "goal_sub"; and builds behavior tree from xml file.
-   * @param state Reference to LifeCycle node state
-   * @return SUCCESS or FAILURE
+   * 初始化导航器插件的动作服务器；订阅 "goal_sub"；并从 xml 文件构建行为树。
+   * @param state 生命周期节点状态的引用
+   * @return 成功或失败
    */
-  nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+  nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State& state) override;
   /**
-   * @brief Activates action server
-   * @param state Reference to LifeCycle node state
-   * @return SUCCESS or FAILURE
+   * @brief 激活动作服务器
+   * @param state 生命周期节点状态的引用
+   * @return 成功或失败
    */
-  nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+  nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State& state) override;
   /**
-   * @brief Deactivates action server
-   * @param state Reference to LifeCycle node state
-   * @return SUCCESS or FAILURE
+   * @brief 停用动作服务器
+   * @param state 生命周期节点状态的引用
+   * @return 成功或失败
    */
-  nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+  nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& state) override;
   /**
-   * @brief Resets member variables
-   * @param state Reference to LifeCycle node state
-   * @return SUCCESS or FAILURE
+   * @brief 重置成员变量
+   * @param state 生命周期节点状态的引用
+   * @return 成功或失败
    */
-  nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+  nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& state) override;
   /**
-   * @brief Called when in shutdown state
-   * @param state Reference to LifeCycle node state
-   * @return SUCCESS or FAILURE
+   * @brief 当处于关闭状态时调用
+   * @param state 生命周期节点状态的引用
+   * @return 成功或失败
    */
-  nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+  nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State& state) override;
 
-  // To handle all the BT related execution
+  // 处理所有与 BT（行为树）相关的执行
   pluginlib::ClassLoader<nav2_core::NavigatorBase> class_loader_;
   std::vector<pluginlib::UniquePtr<nav2_core::NavigatorBase>> navigators_;
   nav2_core::NavigatorMuxer plugin_muxer_;
 
-  // Odometry smoother object
+  // 里程计平滑器对象
   std::shared_ptr<nav2_util::OdomSmoother> odom_smoother_;
 
-  // Metrics for feedback
+  // 反馈的度量
   std::string robot_frame_;
   std::string global_frame_;
   double transform_tolerance_;
   std::string odom_topic_;
 
-  // Spinning transform that can be used by the node
+  // 节点可以使用的旋转变换
   std::shared_ptr<tf2_ros::Buffer> tf_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 };

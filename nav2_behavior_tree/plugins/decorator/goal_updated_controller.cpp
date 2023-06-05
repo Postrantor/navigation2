@@ -15,18 +15,16 @@
 #include <chrono>
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "behaviortree_cpp_v3/decorator_node.h"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_behavior_tree/plugins/decorator/goal_updated_controller.hpp"
-
+#include "rclcpp/rclcpp.hpp"
 
 namespace nav2_behavior_tree
 {
 
 GoalUpdatedController::GoalUpdatedController(
-  const std::string & name,
-  const BT::NodeConfiguration & conf)
+  const std::string & name, const BT::NodeConfiguration & conf)
 : BT::DecoratorNode(name, conf)
 {
 }
@@ -64,22 +62,22 @@ BT::NodeStatus GoalUpdatedController::tick()
     const BT::NodeStatus child_state = child_node_->executeTick();
 
     switch (child_state) {
-      case BT::NodeStatus::RUNNING:
-        return BT::NodeStatus::RUNNING;
+    case BT::NodeStatus::RUNNING:
+      return BT::NodeStatus::RUNNING;
 
-      case BT::NodeStatus::SUCCESS:
-        return BT::NodeStatus::SUCCESS;
+    case BT::NodeStatus::SUCCESS:
+      return BT::NodeStatus::SUCCESS;
 
-      case BT::NodeStatus::FAILURE:
-      default:
-        return BT::NodeStatus::FAILURE;
+    case BT::NodeStatus::FAILURE:
+    default:
+      return BT::NodeStatus::FAILURE;
     }
   }
 
   return status();
 }
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
 BT_REGISTER_NODES(factory)

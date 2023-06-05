@@ -4,8 +4,9 @@ This documents the steps to be taken prior to making a new release of the
 nav2 stack.
 
 ## Summary
+
 1. `Ensure all dependencies are listed in the package.xml files` by doing a
-build of all of ROS2, dependencies, and navigation 2 in one workspace.
+   build of all of ROS2, dependencies, and navigation 2 in one workspace.
 
 2. `Ensure all dependencies are released.` by using rosdep to pull in dependencies instead of building them ourselves.
 

@@ -15,8 +15,9 @@
 #include "nav2_behavior_tree/plugins/condition/are_error_codes_present_condition.hpp"
 
 #include "behaviortree_cpp_v3/bt_factory.h"
+// 注册节点 (Register nodes)
 BT_REGISTER_NODES(factory)
 {
-  factory.registerNodeType<nav2_behavior_tree::AreErrorCodesPresent>(
-    "AreErrorCodesPresent");
+  // 使用工厂对象注册自定义节点类型，这里我们注册了名为 "AreErrorCodesPresent" 的节点 (Use the factory object to register the custom node type, here we register a node called "AreErrorCodesPresent")
+  factory.registerNodeType<nav2_behavior_tree::AreErrorCodesPresent>("AreErrorCodesPresent");
 }

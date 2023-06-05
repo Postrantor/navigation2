@@ -15,69 +15,78 @@
 #ifndef NAV2_CORE__BEHAVIOR_HPP_
 #define NAV2_CORE__BEHAVIOR_HPP_
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "rclcpp/rclcpp.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-#include "tf2_ros/buffer.h"
 #include "nav2_costmap_2d/costmap_topic_collision_checker.hpp"
+#include "nav2_util/lifecycle_node.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "tf2_ros/buffer.h"
 
-namespace nav2_core
-{
+namespace nav2_core {
 
-enum class CostmapInfoType
-{
-  NONE = 0,
-  LOCAL = 1,
-  GLOBAL = 2,
-  BOTH = 3
-};
+// 定义一个枚举类，表示代价地图信息类型
+// Define an enumeration class, representing costmap information types
+enum class CostmapInfoType { NONE = 0, LOCAL = 1, GLOBAL = 2, BOTH = 3 };
 
 /**
  * @class Behavior
- * @brief Abstract interface for behaviors to adhere to with pluginlib
+ * @brief 抽象接口，用于插件库中的行为遵循
+ *        Abstract interface for behaviors to adhere to with pluginlib
  */
-class Behavior
-{
+class Behavior {
 public:
+  // 使用 shared_ptr 定义一个 Ptr 类型
+  // Use shared_ptr to define a Ptr type
   using Ptr = std::shared_ptr<Behavior>;
 
   /**
-   * @brief Virtual destructor
+   * @brief 虚析构函数
+   *        Virtual destructor
    */
   virtual ~Behavior() {}
 
   /**
+   * @param  parent 指向用户节点的指针
+   * @param  name 此规划器的名称
+   * @param  tf 指向 TF 缓冲区的指针
+   * @param  costmap_ros 指向 costmap 的指针
+   *
    * @param  parent pointer to user's node
    * @param  name The name of this planner
    * @param  tf A pointer to a TF buffer
    * @param  costmap_ros A pointer to the costmap
    */
   virtual void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf,
-    std::shared_ptr<nav2_costmap_2d::CostmapTopicCollisionChecker> local_collision_checker,
-    std::shared_ptr<nav2_costmap_2d::CostmapTopicCollisionChecker> global_collision_checker) = 0;
+      const rclcpp_lifecycle::LifecycleNode::WeakPtr& parent,
+      const std::string& name,
+      std::shared_ptr<tf2_ros::Buffer> tf,
+      std::shared_ptr<nav2_costmap_2d::CostmapTopicCollisionChecker> local_collision_checker,
+      std::shared_ptr<nav2_costmap_2d::CostmapTopicCollisionChecker> global_collision_checker) = 0;
 
   /**
-   * @brief Method to cleanup resources used on shutdown.
+   * @brief 清理在关闭时使用的资源的方法
+   *        Method to cleanup resources used on shutdown.
    */
   virtual void cleanup() = 0;
 
   /**
-   * @brief Method to active Behavior and any threads involved in execution.
+   * @brief 激活行为及其执行中涉及的任何线程的方法
+   *        Method to active Behavior and any threads involved in execution.
    */
   virtual void activate() = 0;
 
   /**
-   * @brief Method to deactive Behavior and any threads involved in execution.
+   * @brief 停用行为及其执行中涉及的任何线程的方法
+   *        Method to deactive Behavior and any threads involved in execution.
    */
   virtual void deactivate() = 0;
 
   /**
-   * @brief Method to determine the required costmap info
-   * @return costmap resources needed
+   * @brief 确定所需代价地图信息的方法
+   *        Method to determine the required costmap info
+   * @return 所需的代价地图资源
+   *         costmap resources needed
    */
   virtual CostmapInfoType getResourceInfo() = 0;
 };

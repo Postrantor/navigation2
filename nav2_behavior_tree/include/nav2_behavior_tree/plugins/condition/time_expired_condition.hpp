@@ -18,53 +18,53 @@
 
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
 #include "behaviortree_cpp_v3/condition_node.h"
+#include "rclcpp/rclcpp.hpp"
 
 namespace nav2_behavior_tree
 {
 
 /**
- * @brief A BT::ConditionNode that returns SUCCESS every time a specified
- * time period passes and FAILURE otherwise
+ * @brief 一个 BT::ConditionNode，在指定的时间周期过去时返回 SUCCESS，否则返回 FAILURE
+ *        (A BT::ConditionNode that returns SUCCESS every time a specified
+ *        time period passes and FAILURE otherwise)
  */
 class TimeExpiredCondition : public BT::ConditionNode
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::TimeExpiredCondition
-   * @param condition_name Name for the XML tag for this node
-   * @param conf BT node configuration
+   * @brief nav2_behavior_tree::TimeExpiredCondition 的构造函数
+   *        (A constructor for nav2_behavior_tree::TimeExpiredCondition)
+   * @param condition_name 此节点的 XML 标签名称 (Name for the XML tag for this node)
+   * @param conf BT 节点配置 (BT node configuration)
    */
-  TimeExpiredCondition(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf);
+  TimeExpiredCondition(const std::string & condition_name, const BT::NodeConfiguration & conf);
 
+  // 删除默认构造函数 (Delete the default constructor)
   TimeExpiredCondition() = delete;
 
   /**
-   * @brief The main override required by a BT action
-   * @return BT::NodeStatus Status of tick execution
+   * @brief 主要需要覆盖的 BT 动作 (The main override required by a BT action)
+   * @return BT::NodeStatus 执行 tick 的状态 (Status of tick execution)
    */
   BT::NodeStatus tick() override;
 
   /**
-   * @brief Creates list of BT ports
-   * @return BT::PortsList Containing node-specific ports
+   * @brief 创建 BT 端口列表 (Creates list of BT ports)
+   * @return BT::PortsList 包含特定于节点的端口 (Containing node-specific ports)
    */
   static BT::PortsList providedPorts()
   {
-    return {
-      BT::InputPort<double>("seconds", 1.0, "Seconds")
-    };
+    return {// 输入端口，包含秒数 (Input port with seconds)
+            BT::InputPort<double>("seconds", 1.0, "Seconds")};
   }
 
 private:
-  rclcpp::Node::SharedPtr node_;
-  rclcpp::Time start_;
-  double period_;
+  rclcpp::Node::SharedPtr node_; // 共享指针类型的节点 (Shared pointer type node)
+  rclcpp::Time start_;           // 开始时间 (Start time)
+  double period_;                // 时间周期 (Time period)
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__TIME_EXPIRED_CONDITION_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__TIME_EXPIRED_CONDITION_HPP_

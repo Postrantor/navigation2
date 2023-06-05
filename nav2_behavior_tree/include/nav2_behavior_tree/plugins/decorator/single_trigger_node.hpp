@@ -24,24 +24,29 @@ namespace nav2_behavior_tree
 {
 
 /**
- * @brief A BT::DecoratorNode that triggers its child only once and returns FAILURE
- * for every succeeding tick
+ * @brief 一个BT::DecoratorNode，仅触发一次子节点并在每个后续tick返回FAILURE。
+ *        A BT::DecoratorNode that triggers its child only once and returns FAILURE for every succeeding tick.
  */
 class SingleTrigger : public BT::DecoratorNode
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::SingleTrigger
-   * @param name Name for the XML tag for this node
-   * @param conf BT node configuration
+   * @brief nav2_behavior_tree::SingleTrigger的构造函数。
+   *        A constructor for nav2_behavior_tree::SingleTrigger.
+   * @param name 此节点的XML标签名称。
+   *             Name for the XML tag for this node.
+   * @param conf BT节点配置。
+   *             BT node configuration.
    */
   SingleTrigger(
     const std::string & name,
     const BT::NodeConfiguration & conf);
 
   /**
-   * @brief Creates list of BT ports
-   * @return BT::PortsList Containing node-specific ports
+   * @brief 创建BT端口列表。
+   *        Creates list of BT ports.
+   * @return BT::PortsList 包含节点特定端口的列表。
+   *         BT::PortsList Containing node-specific ports.
    */
   static BT::PortsList providedPorts()
   {
@@ -50,12 +55,14 @@ public:
 
 private:
   /**
-   * @brief The main override required by a BT action
-   * @return BT::NodeStatus Status of tick execution
+   * @brief 由BT操作需要的主要覆盖。
+   *        The main override required by a BT action.
+   * @return BT::NodeStatus tick执行状态。
+   *         BT::NodeStatus Status of tick execution.
    */
   BT::NodeStatus tick() override;
 
-  bool first_time_;
+  bool first_time_; // 初始时为true，表示第一次触发。当触发子节点后，将其设为false。Initial value is true, representing the first trigger. Set to false after triggering the child node.
 };
 
 }  // namespace nav2_behavior_tree

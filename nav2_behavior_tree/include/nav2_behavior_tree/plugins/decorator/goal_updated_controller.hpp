@@ -21,48 +21,56 @@
 
 #include "behaviortree_cpp_v3/decorator_node.h"
 
-#include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace nav2_behavior_tree
 {
 
 /**
- * @brief A BT::DecoratorNode that ticks its child if the goal was updated
+ * @brief 一个BT::DecoratorNode，如果目标已更新，则对其子节点进行tick操作
+ *        A BT::DecoratorNode that ticks its child if the goal was updated
  */
 class GoalUpdatedController : public BT::DecoratorNode
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::GoalUpdatedController
-   * @param name Name for the XML tag for this node
-   * @param conf BT node configuration
+   * @brief nav2_behavior_tree::GoalUpdatedController的构造函数
+   *        A constructor for nav2_behavior_tree::GoalUpdatedController
+   * @param name 用于此节点的XML标签的名称
+   *             Name for the XML tag for this node
+   * @param conf BT节点配置
+   *             BT node configuration
    */
-  GoalUpdatedController(
-    const std::string & name,
-    const BT::NodeConfiguration & conf);
+  GoalUpdatedController(const std::string & name, const BT::NodeConfiguration & conf);
 
   /**
-   * @brief Creates list of BT ports
-   * @return BT::PortsList Containing node-specific ports
+   * @brief 创建BT端口列表
+   *        Creates list of BT ports
+   * @return BT::PortsList 包含特定节点的端口
+   *         BT::PortsList Containing node-specific ports
    */
-  static BT::PortsList providedPorts()
-  {
-    return {};
-  }
+  static BT::PortsList providedPorts() { return {}; }
 
 private:
   /**
-   * @brief The main override required by a BT action
-   * @return BT::NodeStatus Status of tick execution
+   * @brief 主要覆盖BT动作所需的方法
+   *        The main override required by a BT action
+   * @return BT::NodeStatus tick执行状态
+   *         BT::NodeStatus Status of tick execution
    */
   BT::NodeStatus tick() override;
 
-  bool goal_was_updated_;
-  geometry_msgs::msg::PoseStamped goal_;
-  std::vector<geometry_msgs::msg::PoseStamped> goals_;
+  bool goal_was_updated_; // 目标是否已更新的标志
+                          // Flag indicating whether the goal was updated or not
+
+  geometry_msgs::msg::PoseStamped goal_; // 当前目标
+                                         // Current goal
+
+  std::vector<geometry_msgs::msg::PoseStamped> goals_; // 目标列表
+                                                       // List of goals
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__DECORATOR__GOAL_UPDATED_CONTROLLER_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__DECORATOR__GOAL_UPDATED_CONTROLLER_HPP_

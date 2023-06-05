@@ -24,16 +24,16 @@ namespace nav2_behavior_tree
 {
 
 /**
- * @brief A nav2_behavior_tree::BtActionNode class that wraps nav2_msgs::action::Wait
+ * @brief 一个包装 nav2_msgs::action::Wait 的 nav2_behavior_tree::BtActionNode 类 (A nav2_behavior_tree::BtActionNode class that wraps nav2_msgs::action::Wait)
  */
 class WaitAction : public BtActionNode<nav2_msgs::action::Wait>
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::WaitAction
-   * @param xml_tag_name Name for the XML tag for this node
-   * @param action_name Action name this node creates a client for
-   * @param conf BT node configuration
+   * @brief nav2_behavior_tree::WaitAction 的构造函数 (A constructor for nav2_behavior_tree::WaitAction)
+   * @param xml_tag_name 此节点的 XML 标签名称 (Name for the XML tag for this node)
+   * @param action_name 此节点为其创建客户端的操作名称 (Action name this node creates a client for)
+   * @param conf BT 节点配置 (BT node configuration)
    */
   WaitAction(
     const std::string & xml_tag_name,
@@ -41,23 +41,24 @@ public:
     const BT::NodeConfiguration & conf);
 
   /**
-   * @brief Function to perform some user-defined operation on tick
+   * @brief 在 tick 上执行某些用户定义的操作的功能 (Function to perform some user-defined operation on tick)
    */
   void on_tick() override;
 
   /**
-   * @brief Creates list of BT ports
-   * @return BT::PortsList Containing basic ports along with node-specific ports
+   * @brief 创建 BT 端口列表 (Creates list of BT ports)
+   * @return 包含基本端口和特定于节点的端口的 BT::PortsList (BT::PortsList Containing basic ports along with node-specific ports)
    */
   static BT::PortsList providedPorts()
   {
     return providedBasicPorts(
       {
-        BT::InputPort<int>("wait_duration", 1, "Wait time")
+        // 输入端口，用于设置等待时间（以秒为单位）(Input port for setting wait duration in seconds)
+        BT::InputPort<int>("wait_duration", 1, "等待时间 (Wait time)")
       });
   }
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__WAIT_ACTION_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__WAIT_ACTION_HPP_

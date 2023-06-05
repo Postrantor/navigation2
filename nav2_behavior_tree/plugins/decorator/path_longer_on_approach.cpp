@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <memory>
-#include <vector>
 #include "nav2_util/geometry_utils.hpp"
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "nav2_behavior_tree/plugins/decorator/path_longer_on_approach.hpp"
 
@@ -23,37 +23,30 @@ namespace nav2_behavior_tree
 {
 
 PathLongerOnApproach::PathLongerOnApproach(
-  const std::string & name,
-  const BT::NodeConfiguration & conf)
+  const std::string & name, const BT::NodeConfiguration & conf)
 : BT::DecoratorNode(name, conf)
 {
   node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 }
 
 bool PathLongerOnApproach::isPathUpdated(
-  nav_msgs::msg::Path & new_path,
-  nav_msgs::msg::Path & old_path)
+  nav_msgs::msg::Path & new_path, nav_msgs::msg::Path & old_path)
 {
-  return new_path != old_path && old_path.poses.size() != 0 &&
-         new_path.poses.size() != 0 &&
+  return new_path != old_path && old_path.poses.size() != 0 && new_path.poses.size() != 0 &&
          old_path.poses.back() == new_path.poses.back();
 }
 
 bool PathLongerOnApproach::isRobotInGoalProximity(
-  nav_msgs::msg::Path & old_path,
-  double & prox_leng)
+  nav_msgs::msg::Path & old_path, double & prox_leng)
 {
   return nav2_util::geometry_utils::calculate_path_length(old_path, 0) < prox_leng;
 }
 
 bool PathLongerOnApproach::isNewPathLonger(
-  nav_msgs::msg::Path & new_path,
-  nav_msgs::msg::Path & old_path,
-  double & length_factor)
+  nav_msgs::msg::Path & new_path, nav_msgs::msg::Path & old_path, double & length_factor)
 {
   return nav2_util::geometry_utils::calculate_path_length(new_path, 0) >
-         length_factor * nav2_util::geometry_utils::calculate_path_length(
-    old_path, 0);
+         length_factor * nav2_util::geometry_utils::calculate_path_length(old_path, 0);
 }
 
 inline BT::NodeStatus PathLongerOnApproach::tick()
@@ -72,22 +65,22 @@ inline BT::NodeStatus PathLongerOnApproach::tick()
 
   // Check if the path is updated and valid, compare the old and the new path length,
   // given the goal proximity and check if the new path is longer
-  if (isPathUpdated(new_path_, old_path_) && isRobotInGoalProximity(old_path_, prox_len_) &&
-    isNewPathLonger(new_path_, old_path_, length_factor_) && !first_time_)
-  {
+  if (
+    isPathUpdated(new_path_, old_path_) && isRobotInGoalProximity(old_path_, prox_len_) &&
+    isNewPathLonger(new_path_, old_path_, length_factor_) && !first_time_) {
     const BT::NodeStatus child_state = child_node_->executeTick();
     switch (child_state) {
-      case BT::NodeStatus::RUNNING:
-        return BT::NodeStatus::RUNNING;
-      case BT::NodeStatus::SUCCESS:
-        old_path_ = new_path_;
-        return BT::NodeStatus::SUCCESS;
-      case BT::NodeStatus::FAILURE:
-        old_path_ = new_path_;
-        return BT::NodeStatus::FAILURE;
-      default:
-        old_path_ = new_path_;
-        return BT::NodeStatus::FAILURE;
+    case BT::NodeStatus::RUNNING:
+      return BT::NodeStatus::RUNNING;
+    case BT::NodeStatus::SUCCESS:
+      old_path_ = new_path_;
+      return BT::NodeStatus::SUCCESS;
+    case BT::NodeStatus::FAILURE:
+      old_path_ = new_path_;
+      return BT::NodeStatus::FAILURE;
+    default:
+      old_path_ = new_path_;
+      return BT::NodeStatus::FAILURE;
     }
   }
   old_path_ = new_path_;
@@ -95,7 +88,7 @@ inline BT::NodeStatus PathLongerOnApproach::tick()
   return BT::NodeStatus::SUCCESS;
 }
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
 BT_REGISTER_NODES(factory)

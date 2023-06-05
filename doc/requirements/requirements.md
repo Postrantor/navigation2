@@ -12,11 +12,11 @@ This section describes the format of each requirement, the keywords available fo
 
 Each requirement is presented in tabular form with the following fields:
 
-* **Id** - A unique identifier for the requirement
-* **Handle** - A short, scoped, description summarizing the essence of the requirement
-* **Priority** - An associated priority level: **1** (high), **2** (medium), and **3** (low)
-* **Requirement** - The requirement itself, stated in clear, concise requirements language
-* **Notes** - Elaboration and related information for the requirement
+- **Id** - A unique identifier for the requirement
+- **Handle** - A short, scoped, description summarizing the essence of the requirement
+- **Priority** - An associated priority level: **1** (high), **2** (medium), and **3** (low)
+- **Requirement** - The requirement itself, stated in clear, concise requirements language
+- **Notes** - Elaboration and related information for the requirement
 
 ## 1.2 Requirement Language Keywords
 
@@ -38,6 +38,7 @@ These definitions are derived from the [IETF Best Current Practices Document 14]
 
 This section defines some common terminology as used in this document.
 
+```
 Term | Definition
 ---- | ----------
 Path | A *Path* is an ordered sequence of points in space.
@@ -45,6 +46,7 @@ Route | A *Route* is a synonym for Path.
 Trajectory | A *Trajectory* is a path parameterized by time.
 Path Planning | *Path Planning* refers to the process of finding an optimal path between multiple locations. Path planning is typically characterized as a graph traversal problem and algorithms such as A*, D*, and RRT are common choices for implementation.
 Motion Planning | *Motion Planning* refers to the process of specifying the motion of the robot over time to follow a specific path.
+```
 
 ## 1.4 Use Cases
 
@@ -74,25 +76,25 @@ The user will be able to initiate the execution of specific mission plans ("miss
 
 The Navigation System is part of a larger software system. This document does not specify the architecture for the complete system, but simply gives a conceptual overview for the purpose of requirements definition.
 
-The Navigation System has a *command chain*, where each level refines its command input into successively more specific operations for the lext level down, and *support modules* which are used by modules in the command chain.
+The Navigation System has a _command chain_, where each level refines its command input into successively more specific operations for the lext level down, and _support modules_ which are used by modules in the command chain.
 
 ## 1.5.1 Command Chain
 
 The command chain is the sequence of modules that comprise the chain of command from the user, at the top, to the robot, at the bottom.
 
-* **Mission Planning** - Mission Planning provides an interface to the user to allow the user to create mission plans and assign them to robots for execution. A *Mission Plan* is a sequence of *Navigation Commands* along with associated information about how the commands should be carried out.
-* **Mission Execution** - Mission Execution receives the Mission Plan and is responsible to execute the plan and report progress on its execution.
-* **Navigation System** - The Navigation System receives a segment of an overall plan to execute (a *Navigation Command*) and generates the control commands to the robot to carry it out.
-* **Robot Interface** - The Robot Interface is an abstraction of the robot platform, providing the means for the Navigation System to control the robot, learn about its capabilities, and receive feedback from the robot.
+- **Mission Planning** - Mission Planning provides an interface to the user to allow the user to create mission plans and assign them to robots for execution. A _Mission Plan_ is a sequence of _Navigation Commands_ along with associated information about how the commands should be carried out.
+- **Mission Execution** - Mission Execution receives the Mission Plan and is responsible to execute the plan and report progress on its execution.
+- **Navigation System** - The Navigation System receives a segment of an overall plan to execute (a _Navigation Command_) and generates the control commands to the robot to carry it out.
+- **Robot Interface** - The Robot Interface is an abstraction of the robot platform, providing the means for the Navigation System to control the robot, learn about its capabilities, and receive feedback from the robot.
 
 The following diagram shows the modules in the command chain and the successive refinement of the control commands:
 
 ![Command Chain](./images/Context.png)
 
-The Navigation System itself can be decomposed into two general responsibilities, *Planning*, and *Execution*.
+The Navigation System itself can be decomposed into two general responsibilities, _Planning_, and _Execution_.
 
-* **Planning** - The Planning Module is responsible to execute Navigation Commands. To do so, this module can evaluate input maps and continually assess the robot's environment to plan motion and provide the path for the robot to follow to achieve completion of the Navigation Command.
-* **Execution** - The Execution Module is responsible to execute the path provided by Planning, generating the control commands required to follow the path.
+- **Planning** - The Planning Module is responsible to execute Navigation Commands. To do so, this module can evaluate input maps and continually assess the robot's environment to plan motion and provide the path for the robot to follow to achieve completion of the Navigation Command.
+- **Execution** - The Execution Module is responsible to execute the path provided by Planning, generating the control commands required to follow the path.
 
 ![Navigation System](./images/Navigation-System.png)
 
@@ -104,10 +106,10 @@ Decomposing the Navigation System, the overall command chain is as follows:
 
 In addition to the command chain, there are several supporting modules and subsystems required for a complete system. The implementation of these modules is outside the scope of the Navigation System. However, the interface to these components is in scope and the associated requirements should be defined. Together, the support modules provide the robot with a full picture of the robot's environment.
 
-* **Mapping** - The Mapping Subsystem generates maps that can be used by the Navigation System to plan the robot's motion. Maps are typically created in advance and are available to the Navigation System. A map can be updated to reflect changes in the environment. The frequency of these updates will vary among implementations.
-* **Perception** - The Perception Subsystem utilizes sensors to develop an understanding of the dynamic environment around the robot. This information is available to the Navigation System, such as when avoiding obstacles in the robot's path.
-* **Prediction** - The Prediction Subsystem anticipates future motion trajectories of any perceived objects.
-* **Localization** - The Localization Subsystem provides the current location of the robot.
+- **Mapping** - The Mapping Subsystem generates maps that can be used by the Navigation System to plan the robot's motion. Maps are typically created in advance and are available to the Navigation System. A map can be updated to reflect changes in the environment. The frequency of these updates will vary among implementations.
+- **Perception** - The Perception Subsystem utilizes sensors to develop an understanding of the dynamic environment around the robot. This information is available to the Navigation System, such as when avoiding obstacles in the robot's path.
+- **Prediction** - The Prediction Subsystem anticipates future motion trajectories of any perceived objects.
+- **Localization** - The Localization Subsystem provides the current location of the robot.
 
 In a complete robot system these modules are available to the core navigation modules (the command chain), as shown in the following diagram:
 
@@ -119,12 +121,12 @@ To facilitate error recovery, each module in the command chain, if it is unable 
 
 The Navigation System should meet the following high-level design goals:
 
-* **Extensibility** - The Navigation System should be a *pluggable framework* to allow for other developers to easily extend the capabilities of the Navigation System, such as adding the ability to handle new navigation commands.
-* **Modularity** - The Navigation System should allow developers to *easily replace components* with alternative implementations.
-* **Generality** - The Navigation System should not introduce inherent limitations in the architectural blocks. For example, it should support multiple kinds of robots, not making assumptions about robot capabilities and limitations and should support various map types and orientations.
-* **Performance** - *TODO: What are the performance goals?*
-* **Scalability** - *TODO: What are the scalability goals?*
-* *TODO: Other important design goals to call out?*
+- **Extensibility** - The Navigation System should be a _pluggable framework_ to allow for other developers to easily extend the capabilities of the Navigation System, such as adding the ability to handle new navigation commands.
+- **Modularity** - The Navigation System should allow developers to _easily replace components_ with alternative implementations.
+- **Generality** - The Navigation System should not introduce inherent limitations in the architectural blocks. For example, it should support multiple kinds of robots, not making assumptions about robot capabilities and limitations and should support various map types and orientations.
+- **Performance** - _TODO: What are the performance goals?_
+- **Scalability** - _TODO: What are the scalability goals?_
+- _TODO: Other important design goals to call out?_
 
 # 2.0 Requirements
 
@@ -134,6 +136,7 @@ This section lists the requirements for the Navigation System.
 
 There are various constraints on the development of the ROS 2 Navigation stack.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 IC001 | Developer's Guide | 1 | The Navigation System SHOULD be developed in accordance with the ROS 2 Developer's Guide | [ROS 2 Developer's Guide](https://github.com/ros2/ros2/wiki/Developer-Guide)
@@ -146,19 +149,22 @@ IC007 | Implementation Language.Python.Version | 1 | Any Python code developed f
 IC008 | Implementation Language.GUI | 1 | Any GUIs developed as part of the Navigation System SHOULD use the Qt library, via C++ or Python (PyQt) | *Which version?*
 IC009 | Implementation Language.GUI.QML | 1 | Any GUIs developed as part of the Navigation System MAY use QML
 IC010 | ROS2.Version | 1 | The first revision of the Navigation System WILL target the Crystal Clemmys release of ROS2. | We should develop against the latest ROS2 code whenever possible.
+```
 
 ## 2.2 Target Platforms
 
- Navigation System will run on the latest versions of the operating systems supported by the core ROS 2 code.
+Navigation System will run on the latest versions of the operating systems supported by the core ROS 2 code.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 TP001 | Target Platforms.Operating Systems.Ubuntu | 1 | The Navigation System MUST support Ubuntu Desktop 16.04 and Ubuntu Desktop 18.04
 TP002 | Target Platforms.Operating Systems.MacOS | 1 | The Navigation System MUST support MacOS 10.13 (High Sierra) and MacOS 10.14 (Mohave)
 TP003 | Target Platforms.Operating Systems.Windows | 1 | The Navigation System MUST support Windows 10 Professional
-TP004 | Target Platforms.Operating Systems.Clear Linux | 1 | The Navigation System SHOULD support the Intel's Clear Linux distribution | Clear Linux uses a continuous deployment model. 
+TP004 | Target Platforms.Operating Systems.Clear Linux | 1 | The Navigation System SHOULD support the Intel's Clear Linux distribution | Clear Linux uses a continuous deployment model.
 TP005 | Target Platforms.CPU.Word Size | 1 | The Navigation System SHALL support 64-bit processors | Don't assume a specific pointer size
 TP006 | Target Platforms.Minimum Platform | 1 | *TODO: Should we specify a minimum target platform? Or, should this be expressed as minimum platform requirements?*
+```
 
 ## 2.3 Command Chain Modules
 
@@ -168,6 +174,7 @@ This section lists the requirements for the core command chain modules in the Na
 
 A complete system should have some kind of Mission Planning subsystem to convey the user's intentions to the robot. The User interacts with this Mission Planning subsystem to generate a Mission Plan for the robot. The Mission Plan is defined as a sequence of Navigation Commands, along with any associated information about how and when the plan should be carried out. The design and implementation of a Mission Planning subsystem is outside the scope of the Navigation System. However, in order to understand the larger system context and how Mission Planning interacts with the Navigation System, this section will consider the nature of a mission plan and the kinds of operations it may contain.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 MP001 | Mission Planning.Navigation Commands | 1 | The Mission Plan MUST be able to express the plan as a coordinated sequence of Navigation Commands. | Could include time and policy aspects (*when* and *how*, not just *what*)
@@ -178,17 +185,19 @@ MP005 | Mission Planning.Navigation Commands.Enqueue | 2 | The Mission Plan SHOU
 MP006 | Mission Planning.Navigation Commands.Follow | 2 | The Mission Plan SHOULD be able to convey the information required for a robot to be able to follow another specified robot. | This one doesn't have a completion state (reaching the goal), unless it specifies additional information such as "follow until destination reached."
 MP007 | Mission Planning.Navigation Commands.Maintain Pose | 1 | The Mission Plan SHOULD be able to convey the information required for a robot to maintain its current pose. | Could be indefinite or time-based.
 MP008 | Mission Planning.Navigation Commands.Park | 2 | The Mission Plan SHOULD be able to convey the information required for a robot to park itself. | The implementation of the parking command could interact with the robot to cause it, for example, to shut down or enter a low-power state.
-MP009 | Mission Planning.Navigation Commands.Dock to Charger | 2 | The Mission Plan SHOULD be able to convey the information required for a robot to dock to a specific charging station. 
+MP009 | Mission Planning.Navigation Commands.Dock to Charger | 2 | The Mission Plan SHOULD be able to convey the information required for a robot to dock to a specific charging station.
 MP010 | Mission Planning.Policy | 1 | The Mission Plan SHOULD be able to express information about how and when the navigation commands are to be carried out. | Time and safety constraints.
 MP011 | Mission Planning.Policy.Time.Initiation | 1 | The Mission Plan SHOULD be able to convey when a mission should begin.
 MP012 | Mission Planning.Policy.Time.Completion | 1 | The Mission Plan SHOULD be able to convey by when a mission should end.
 MP013 | Mission Planning.Policy.Safety.Maximum Speed | 1 | The Mission Plan SHOULD be able to convey a maximum speed for the robot. | The robot would respect this value in carrying out the plan. This could be site-specific policy.
 MP014 | Mission Planning.Policy.Safety.Minimum Safety Buffer | 1 | The Mission Plan SHOULD be able to convey a minimum safety buffer distance. | The robot would respect this value and maintain the distance from other objects at all times. Should vary with relative velocities.
+```
 
 ### 2.3.2 Mission Execution
 
 The Mission Execution module has the responsibility to execute a provided mission. It provides each successive Navigation Command to the Navigation Subsystem, monitoring and reporting progress towards completion of the plan.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 ME001 | Mission Execution.Inputs.Mission Plan | 1 | The Mission Execution module MUST accept the Mission Plan to execute.
@@ -204,11 +213,13 @@ ME010 | Mission Execution.Feedback.Outputs.Mission Canceled | 1 | Upon receiving
 ME011 | Mission Execution.Feedback.Outputs.Mission Failure | 1 | If the Mission Execution module is unable to execute the mission, it MUST output a failure notification. | This would be received by the user-level interface and could necessitate user intervention, such as having a remote operating center where the remote operator "rescues" the robot.
 ME012 | Mission Execution.Safe State Upon Failure | 1 | If the Mission Execution module is unable to execute the mission, it MUST direct the robot to a safe state. | The failure could be for a variety of reasons - sensor failures, algorithmic failure, a collision, etc.
 ME013 | Mission Execution.Selection of Planners | 1 | The Navigation System SHOULD allow the association and use of specific Planning and Execution Modules for a given Navigation Command. | For example, a user may want to have components for classic point-A-to-point-B travel, but upon reaching point B, have specialized components that control a series of maneuvers such as docking to a charging station or a conveyor belt.
+```
 
 ### 2.3.3 Navigation System.Planning
 
 The Navigation System's Planning Module receives the Navigation Command from the Mission Execution module and is responsible to implement that command. To do so, the Planning Module can use information from the Mapping Subsystem to plan a route and use input from the Perception Subsystem to evaluate the dynamic environment and avoid collisions with objects crossing its path.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 PLN001 | Planning | 1 | The Navigation System SHOULD have a Planning Module that generates the Path for the robot to follow to implement a specified Navigation Command.
@@ -216,7 +227,7 @@ PLN002 | Planning.Inputs.Navigation Command | 1 | The Planning Module SHALL rece
 PLN003 | Planning.Inputs.Policy | 1 | The Planning Module SHALL receive policy information associated with the Navigation Command to execute. | This could be global policy and/or per-command policy. Policy could contain, for example, a list of conventions for the robot to follow (navigate on the right side of a path, for example).
 PLN004 | Planning.Inputs.Mapping.Maps | 1 | The Planning Module MUST have access to one or more maps available that describe the robot's environment.
 PLN005 | Planning.Inputs.Perception.Sensory Input | 1 | The Planning Module MUST have access to data from the Perception Subsystem.
-PLN006 | Planning.Inputs.Prediction.Predicted Trajectories | 1 | The Planning Module MAY have access to predicted trajectories of objects detected by the Perception Subsystem. | In simple planners, there is no prediction of moving objects, but in more complex planners, this may be considered. 
+PLN006 | Planning.Inputs.Prediction.Predicted Trajectories | 1 | The Planning Module MAY have access to predicted trajectories of objects detected by the Perception Subsystem. | In simple planners, there is no prediction of moving objects, but in more complex planners, this may be considered.
 PLN007 | Planning.Inputs.Localization.Current Pose | 1 | The Planning Module MUST have access to the robot's current pose. | The pose could be be provided manually or automatically determined (outside of this module).
 PLN008 | Planning.Outputs.Path | 1 | The Planning Module SHOULD output the Path for the robot to follow to execute the input Navigation Command and MUST respect any associated policy.
 PLN009 | Planning.Feedback.Inputs | 1 | The Planning Module MAY receive error input from the downstream Execution Module. | So that it can attempt to recover from execution failures.
@@ -227,11 +238,13 @@ PLN013 | Planning.Feedback.Outputs.Error Propagation | 1 | The Planning Module S
 PLN014 | Planning.Logging | 1 | The Planning Module SHOULD log significant events. | Commands completed, failures, recoveries, etc.
 PLN015 | Planning.Documentation | 1 | The Navigation System SHOULD provided detailed documentation on how to develop a Planning Module.
 PLN016 | Planning.Simple Example | 1 | The Navigation System SHOULD provided a simple example of a Planning Module. | An easily understood module that developers and students could use as a starting point.
+```
 
 ### 2.3.4 Navigation System.Execution
 
 The Navigation System's Execution Module is responsible to execute the Path specified by the Planning Module. It has available to it all of the information from the support modules and must respect any policy guidance.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 EXE001 | Execution | 1 | The Navigation System SHOULD have an Execution Module that generates commands to the robot to achieve a specific Path.
@@ -246,11 +259,13 @@ EXE009 | Execution.Feedback.Outputs.Collision Detected | 1 | The Execution Modul
 EXE010 | Execution.Feedback.Outputs.Error Propagation | 1 | The Execution Module SHOULD propagate errors that it can't handle.
 EXE011 | Execution.Documentation | 1 | The Navigation System SHOULD provided detailed documentation on how to develop an Execution Module.
 EXE012 | Execution.Simple Example | 1 | The Navigation System SHOULD provided a simple example of an Execution Module| An easily understood module that developers and students could use as a starting point.
+```
 
 ### 2.3.5 Robot Interface
 
 There should be a uniform interface to the various supported robots. The abstraction of different robots may be handled by current mechanisms, such as UDRF, Twist commands, etc. We should consider if anything else is needed here. The user should be able to specify different types of robot drive types, such as Ackerman (automobile) steering, and robot shapes.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 RI001 | Robot Interface.Attributes | 1 | Holonomicity, max/min speeds and accelerations, etc.
@@ -260,6 +275,7 @@ RI004 | Robot Interface.Safety.Speed Limiting | 1 | *TODO*
 RI005 | Robot Interface.Safety.Force Limiting | 1 | *TODO*
 RI006 | Robot Interface.EMO Button | 1 | *TODO*
 RI007 | Robot Interface.Feedback.Outputs | 1 | *TODO*
+```
 
 ## 2.4 Support Modules
 
@@ -269,6 +285,7 @@ There are a few support modules and subsystems that are not part of the Navigati
 
 The map data format should be capable of describing typical indoor and outdoor environments encoutered by the robots.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 MAP001 | Mapping | 1 | The Mapping System SHALL provide map information to the Navigation System.
@@ -291,42 +308,49 @@ MAP017 | Mapping.Dimensionality.2D+ | 1 | The Mapping System MAY provide 2D+ map
 MAP018 | Mapping.Dimensionality.3D | 1 | The Mapping System MAY provide 3D map information.
 MAP019 | Mapping.Dynamic Updates | 1 | The Mapping System SHOULD provide real-time updates of map information. | Allow for updates to the map to be pushed to clients.
 MAP020 | Mapping.Memory Optimization.Tiling | 1 | The Mapping System MAY provide the Navigation System with local map regions, sufficient for navigation. | Could provide relevant map tiles, for example, saving memory in the planners.
+```
 
 ### 2.4.2 Perception
 
 The Perception Subsystem provides information about objects detected in the robot's environment. This information would typically be generated from a fusion of sensor input.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 PER001 | Perception | 1 | The Perception Subsystem SHALL provide information about the dynamic environment of the robot. | Info sufficient to carry out the Navigation System requirements.
 PER002 | Perception.Latency | 1 | *TODO*
+```
 
 ### 2.4.3 Prediction
 
-The Prediction Subsystem uses input from the Perception Subsystem and predicts the trajectories of the detected objects over time. 
+The Prediction Subsystem uses input from the Perception Subsystem and predicts the trajectories of the detected objects over time.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 PRE001 | Prediction.Object Prediction | 1 | The Prediction Subsystem SHOULD predict the trajectories of detected objects. | One of the biggest shortcomings of the current system is the inability to model/predict where obstacles will be in the future. This leads to collisions with other moving objects
 PRE002 | Prediction.Object Prediction.Time Horizon | 1 | *TODO: How far into the future should the object prediction work?*
+```
 
 ### 2.4.4 Localization
 
 The Navigation System requires the Robot's current pose, provided by an external Localization module. This section lists the requirements for the information provided by the the Localization Module.
 
+```
 Id | Handle | Priority | Description | Notes
 -- | ------ | -------- | ----------- | -----
 LOC001 | Localization.Robot Pose | 1 | The Localization module MUST provide the robot's current pose to the Navigation System. | This could be manual or as a result of automatic localization; the Navigation System wouldn't know either way.
 LOC002 | Localization.Robot Pose.Accuracy | 1 | The Localization Module MUST provide the estimated accuracy of the pose. | So that Planning modules can determine if a particular Localization module has sufficient accuracy. Could use PoseWithCovariance message.
+```
 
 ## 2.5 Open Issues
 
-* What are the performance goals for the ROS2 Navigation System?
-* What are the scalability for the ROS2 Navigaton System?
-* Any other important design goals to call out?
-* Should we specify a minimum target platform? Or, should this be expressed as minimum platform requirements?
-* What is the right latency value for detecting a collision? 
-* Should we add any safety-related functionality at the robot interface level? 
-* Do safety zones need unique names? 
-* What is the target latency for the perception subsystem?
-* How far into the future should the object prediction work? 
+- What are the performance goals for the ROS2 Navigation System?
+- What are the scalability for the ROS2 Navigaton System?
+- Any other important design goals to call out?
+- Should we specify a minimum target platform? Or, should this be expressed as minimum platform requirements?
+- What is the right latency value for detecting a collision?
+- Should we add any safety-related functionality at the robot interface level?
+- Do safety zones need unique names?
+- What is the target latency for the perception subsystem?
+- How far into the future should the object prediction work?

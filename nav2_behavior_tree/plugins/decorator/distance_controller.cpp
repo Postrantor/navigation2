@@ -30,29 +30,45 @@
 namespace nav2_behavior_tree
 {
 
+/**
+ * @brief DistanceController 构造函数
+ * 
+ * @param[in] name 节点名称
+ * @param[in] conf 节点配置
+ *
+ * @details
+ * 该构造函数用于初始化 DistanceController 类的实例。
+ */
 DistanceController::DistanceController(
   const std::string & name,
   const BT::NodeConfiguration & conf)
-: BT::DecoratorNode(name, conf),
-  distance_(1.0),
-  global_frame_("map"),
-  robot_base_frame_("base_link"),
-  first_time_(false)
+: BT::DecoratorNode(name, conf), // 初始化 DecoratorNode 基类
+  distance_(1.0), // 设定默认距离为1.0
+  global_frame_("map"), // 设定默认全局坐标系为 "map"
+  robot_base_frame_("base_link"), // 设定默认机器人基座坐标系为 "base_link"
+  first_time_(false) // 初始状态设为非第一次执行
 {
-  getInput("distance", distance_);
-  getInput("global_frame", global_frame_);
-  getInput("robot_base_frame", robot_base_frame_);
-  node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
-  tf_ = config().blackboard->get<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer");
+  getInput("distance", distance_); // 获取输入参数 distance
+  getInput("global_frame", global_frame_); // 获取输入参数 global_frame
+  getInput("robot_base_frame", robot_base_frame_); // 获取输入参数 robot_base_frame
+  node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node"); // 从黑板中获取共享指针 rclcpp::Node
+  tf_ = config().blackboard->get<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer"); // 从黑板中获取共享指针 tf2_ros::Buffer
 
-  node_->get_parameter("transform_tolerance", transform_tolerance_);
+  node_->get_parameter("transform_tolerance", transform_tolerance_); // 获取参数 transform_tolerance
 }
 
+/**
+ * @brief tick 函数，用于执行节点操作
+ *
+ * @return BT::NodeStatus 返回节点状态
+ *
+ * @details
+ * 此函数用于执行 DistanceController 类的操作，并根据操作结果返回节点状态。
+ */
 inline BT::NodeStatus DistanceController::tick()
 {
   if (status() == BT::NodeStatus::IDLE) {
-    // Reset the starting position since we're starting a new iteration of
-    // the distance controller (moving from IDLE to RUNNING)
+    // 如果当前状态为空闲，则重置起始位置，因为我们正在启动距离控制器的新迭代（从 IDLE 切换到 RUNNING）
     if (!nav2_util::getCurrentPose(
         start_pose_, *tf_, global_frame_, robot_base_frame_,
         transform_tolerance_))
@@ -65,7 +81,7 @@ inline BT::NodeStatus DistanceController::tick()
 
   setStatus(BT::NodeStatus::RUNNING);
 
-  // Determine distance travelled since we've started this iteration
+  // 确定自开始此次迭代以来已行驶的距离
   geometry_msgs::msg::PoseStamped current_pose;
   if (!nav2_util::getCurrentPose(
       current_pose, *tf_, global_frame_, robot_base_frame_,
@@ -75,13 +91,11 @@ inline BT::NodeStatus DistanceController::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  // Get euclidean distance
+  // 获取欧几里得距离
   auto travelled = nav2_util::geometry_utils::euclidean_distance(
     start_pose_.pose, current_pose.pose);
 
-  // The child gets ticked the first time through and every time the threshold
-  // distance is crossed. In addition, once the child begins to run, it is
-  // ticked each time 'til completion
+  // 子节点在第一次执行时被 tick，每次越过阈值距离时被 tick。此外，一旦子节点开始运行，它将在每次完成之前进行 tick
   if (first_time_ || (child_node_->status() == BT::NodeStatus::RUNNING) ||
     travelled >= distance_)
   {

@@ -24,15 +24,20 @@ namespace nav2_behavior_tree
 {
 
 /**
+ * @brief nav2_behavior_tree::BtActionNode 类，用于封装 nav2_msgs::action::Spin
  * @brief A nav2_behavior_tree::BtActionNode class that wraps nav2_msgs::action::Spin
  */
 class SpinAction : public BtActionNode<nav2_msgs::action::Spin>
 {
 public:
   /**
+   * @brief nav2_behavior_tree::SpinAction 构造函数
    * @brief A constructor for nav2_behavior_tree::SpinAction
+   * @param xml_tag_name 此节点的 XML 标签名
    * @param xml_tag_name Name for the XML tag for this node
+   * @param action_name 创建客户端的操作名称
    * @param action_name Action name this node creates a client for
+   * @param conf BT 节点配置
    * @param conf BT node configuration
    */
   SpinAction(
@@ -41,28 +46,28 @@ public:
     const BT::NodeConfiguration & conf);
 
   /**
+   * @brief 在 tick 上执行一些用户定义的操作
    * @brief Function to perform some user-defined operation on tick
    */
   void on_tick() override;
 
   /**
+   * @brief 创建 BT 端口列表
    * @brief Creates list of BT ports
+   * @return BT::PortsList 包含基本端口和节点特定端口
    * @return BT::PortsList Containing basic ports along with node-specific ports
    */
   static BT::PortsList providedPorts()
   {
     return providedBasicPorts(
-      {
-        BT::InputPort<double>("spin_dist", 1.57, "Spin distance"),
-        BT::InputPort<double>("time_allowance", 10.0, "Allowed time for spinning"),
-        BT::InputPort<bool>("is_recovery", true, "True if recovery")
-      });
-  }
+       BT::InputPort<double>("spin_dist", 1.57, "Spin distance"),
+       BT::InputPort<double>("time_allowance", 10.0, "Allowed time for spinning"),
+       BT::InputPort<bool>("is_recovery", true, "True if recovery")});
+}
 
-private:
-  bool is_recovery_;
+private : bool is_recovery_; // 是否为恢复操作 (Whether it's a recovery operation)
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__SPIN_ACTION_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__ACTION__SPIN_ACTION_HPP_

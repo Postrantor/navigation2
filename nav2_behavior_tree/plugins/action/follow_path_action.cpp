@@ -12,51 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "nav2_behavior_tree/plugins/action/follow_path_action.hpp"
+
 #include <memory>
 #include <string>
 
-#include "nav2_behavior_tree/plugins/action/follow_path_action.hpp"
-
-namespace nav2_behavior_tree
-{
+namespace nav2_behavior_tree {
 
 FollowPathAction::FollowPathAction(
-  const std::string & xml_tag_name,
-  const std::string & action_name,
-  const BT::NodeConfiguration & conf)
-: BtActionNode<Action>(xml_tag_name, action_name, conf)
-{
-}
+    const std::string& xml_tag_name,
+    const std::string& action_name,
+    const BT::NodeConfiguration& conf)
+    : BtActionNode<Action>(xml_tag_name, action_name, conf) {}
 
-void FollowPathAction::on_tick()
-{
+void FollowPathAction::on_tick() {
   getInput("path", goal_.path);
   getInput("controller_id", goal_.controller_id);
   getInput("goal_checker_id", goal_.goal_checker_id);
 }
 
-BT::NodeStatus FollowPathAction::on_success()
-{
+BT::NodeStatus FollowPathAction::on_success() {
   setOutput("error_code_id", ActionGoal::NONE);
   return BT::NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus FollowPathAction::on_aborted()
-{
+BT::NodeStatus FollowPathAction::on_aborted() {
   setOutput("error_code_id", result_.result->error_code);
   return BT::NodeStatus::FAILURE;
 }
 
-BT::NodeStatus FollowPathAction::on_cancelled()
-{
+BT::NodeStatus FollowPathAction::on_cancelled() {
   // Set empty error code, action was cancelled
   setOutput("error_code_id", ActionGoal::NONE);
   return BT::NodeStatus::SUCCESS;
 }
 
-void FollowPathAction::on_wait_for_result(
-  std::shared_ptr<const Action::Feedback>/*feedback*/)
-{
+void FollowPathAction::on_wait_for_result(std::shared_ptr<const Action::Feedback> /*feedback*/) {
   // Grab the new path
   nav_msgs::msg::Path new_path;
   getInput("path", new_path);
@@ -88,15 +79,10 @@ void FollowPathAction::on_wait_for_result(
 }  // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
-BT_REGISTER_NODES(factory)
-{
-  BT::NodeBuilder builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
-    {
-      return std::make_unique<nav2_behavior_tree::FollowPathAction>(
-        name, "follow_path", config);
-    };
+BT_REGISTER_NODES(factory) {
+  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config) {
+    return std::make_unique<nav2_behavior_tree::FollowPathAction>(name, "follow_path", config);
+  };
 
-  factory.registerBuilder<nav2_behavior_tree::FollowPathAction>(
-    "FollowPath", builder);
+  factory.registerBuilder<nav2_behavior_tree::FollowPathAction>("FollowPath", builder);
 }

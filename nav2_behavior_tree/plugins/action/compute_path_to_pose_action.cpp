@@ -12,24 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "nav2_behavior_tree/plugins/action/compute_path_to_pose_action.hpp"
+
 #include <memory>
 #include <string>
 
-#include "nav2_behavior_tree/plugins/action/compute_path_to_pose_action.hpp"
-
-namespace nav2_behavior_tree
-{
+namespace nav2_behavior_tree {
 
 ComputePathToPoseAction::ComputePathToPoseAction(
-  const std::string & xml_tag_name,
-  const std::string & action_name,
-  const BT::NodeConfiguration & conf)
-: BtActionNode<Action>(xml_tag_name, action_name, conf)
-{
-}
+    const std::string& xml_tag_name,
+    const std::string& action_name,
+    const BT::NodeConfiguration& conf)
+    : BtActionNode<Action>(xml_tag_name, action_name, conf) {}
 
-void ComputePathToPoseAction::on_tick()
-{
+void ComputePathToPoseAction::on_tick() {
   getInput("goal", goal_.goal);
   getInput("planner_id", goal_.planner_id);
   if (getInput("start", goal_.start)) {
@@ -37,24 +33,21 @@ void ComputePathToPoseAction::on_tick()
   }
 }
 
-BT::NodeStatus ComputePathToPoseAction::on_success()
-{
+BT::NodeStatus ComputePathToPoseAction::on_success() {
   setOutput("path", result_.result->path);
   // Set empty error code, action was successful
   setOutput("error_code_id", ActionGoal::NONE);
   return BT::NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus ComputePathToPoseAction::on_aborted()
-{
+BT::NodeStatus ComputePathToPoseAction::on_aborted() {
   nav_msgs::msg::Path empty_path;
   setOutput("path", empty_path);
   setOutput("error_code_id", result_.result->error_code);
   return BT::NodeStatus::FAILURE;
 }
 
-BT::NodeStatus ComputePathToPoseAction::on_cancelled()
-{
+BT::NodeStatus ComputePathToPoseAction::on_cancelled() {
   nav_msgs::msg::Path empty_path;
   setOutput("path", empty_path);
   // Set empty error code, action was cancelled
@@ -62,8 +55,7 @@ BT::NodeStatus ComputePathToPoseAction::on_cancelled()
   return BT::NodeStatus::SUCCESS;
 }
 
-void ComputePathToPoseAction::halt()
-{
+void ComputePathToPoseAction::halt() {
   nav_msgs::msg::Path empty_path;
   setOutput("path", empty_path);
   BtActionNode::halt();
@@ -72,15 +64,12 @@ void ComputePathToPoseAction::halt()
 }  // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
-BT_REGISTER_NODES(factory)
-{
-  BT::NodeBuilder builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
-    {
-      return std::make_unique<nav2_behavior_tree::ComputePathToPoseAction>(
+BT_REGISTER_NODES(factory) {
+  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config) {
+    return std::make_unique<nav2_behavior_tree::ComputePathToPoseAction>(
         name, "compute_path_to_pose", config);
-    };
+  };
 
   factory.registerBuilder<nav2_behavior_tree::ComputePathToPoseAction>(
-    "ComputePathToPose", builder);
+      "ComputePathToPose", builder);
 }

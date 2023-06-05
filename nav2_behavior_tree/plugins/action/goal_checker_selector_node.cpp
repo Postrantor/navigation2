@@ -13,25 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <string>
-#include <memory>
-
-#include "std_msgs/msg/string.hpp"
-
 #include "nav2_behavior_tree/plugins/action/goal_checker_selector_node.hpp"
 
-#include "rclcpp/rclcpp.hpp"
+#include <memory>
+#include <string>
 
-namespace nav2_behavior_tree
-{
+#include "rclcpp/rclcpp.hpp"
+#include "std_msgs/msg/string.hpp"
+
+namespace nav2_behavior_tree {
 
 using std::placeholders::_1;
 
-GoalCheckerSelector::GoalCheckerSelector(
-  const std::string & name,
-  const BT::NodeConfiguration & conf)
-: BT::SyncActionNode(name, conf)
-{
+GoalCheckerSelector::GoalCheckerSelector(const std::string& name, const BT::NodeConfiguration& conf)
+    : BT::SyncActionNode(name, conf) {
   node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 
   getInput("topic_name", topic_name_);
@@ -40,11 +35,10 @@ GoalCheckerSelector::GoalCheckerSelector(
   qos.transient_local().reliable();
 
   goal_checker_selector_sub_ = node_->create_subscription<std_msgs::msg::String>(
-    topic_name_, qos, std::bind(&GoalCheckerSelector::callbackGoalCheckerSelect, this, _1));
+      topic_name_, qos, std::bind(&GoalCheckerSelector::callbackGoalCheckerSelect, this, _1));
 }
 
-BT::NodeStatus GoalCheckerSelector::tick()
-{
+BT::NodeStatus GoalCheckerSelector::tick() {
   rclcpp::spin_some(node_);
 
   // This behavior always use the last selected goal checker received from the topic input.
@@ -67,16 +61,13 @@ BT::NodeStatus GoalCheckerSelector::tick()
   return BT::NodeStatus::SUCCESS;
 }
 
-void
-GoalCheckerSelector::callbackGoalCheckerSelect(const std_msgs::msg::String::SharedPtr msg)
-{
+void GoalCheckerSelector::callbackGoalCheckerSelect(const std_msgs::msg::String::SharedPtr msg) {
   last_selected_goal_checker_ = msg->data;
 }
 
 }  // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
-BT_REGISTER_NODES(factory)
-{
+BT_REGISTER_NODES(factory) {
   factory.registerNodeType<nav2_behavior_tree::GoalCheckerSelector>("GoalCheckerSelector");
 }

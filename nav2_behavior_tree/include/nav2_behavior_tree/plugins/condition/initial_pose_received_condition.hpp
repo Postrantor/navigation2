@@ -20,10 +20,13 @@
 namespace nav2_behavior_tree
 {
 /**
- * @brief A BT::ConditionNode that returns SUCCESS if initial pose
- * has been received and FAILURE otherwise
+ * @brief 一个 BT::ConditionNode，如果收到初始位置，则返回 SUCCESS；否则返回 FAILURE。
+ *        (A BT::ConditionNode that returns SUCCESS if initial pose has been received and FAILURE otherwise.)
+ *
+ * @param tree_node 树节点引用，用于获取节点信息。(The tree node reference, used to get node information.)
+ * @return 返回 BT::NodeStatus 状态，表示是否收到初始位置。(Returns BT::NodeStatus status, indicating whether the initial pose has been received.)
  */
 BT::NodeStatus initialPoseReceived(BT::TreeNode & tree_node);
-}
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__INITIAL_POSE_RECEIVED_CONDITION_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__INITIAL_POSE_RECEIVED_CONDITION_HPP_

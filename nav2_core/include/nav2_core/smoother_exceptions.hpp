@@ -18,49 +18,37 @@
 #include <stdexcept>
 #include <string>
 
-namespace nav2_core
-{
+namespace nav2_core {
 
-class SmootherException : public std::runtime_error
-{
+class SmootherException : public std::runtime_error {
 public:
-  explicit SmootherException(const std::string & description)
-  : std::runtime_error(description) {}
+  explicit SmootherException(const std::string& description) : std::runtime_error(description) {}
 };
 
-class InvalidSmoother : public SmootherException
-{
+class InvalidSmoother : public SmootherException {
 public:
-  explicit InvalidSmoother(const std::string & description)
-  : SmootherException(description) {}
+  explicit InvalidSmoother(const std::string& description) : SmootherException(description) {}
 };
 
-class InvalidPath : public SmootherException
-{
+class InvalidPath : public SmootherException {
 public:
-  explicit InvalidPath(const std::string & description)
-  : SmootherException(description) {}
+  explicit InvalidPath(const std::string& description) : SmootherException(description) {}
 };
 
-class SmootherTimedOut : public SmootherException
-{
+class SmootherTimedOut : public SmootherException {
 public:
-  explicit SmootherTimedOut(const std::string & description)
-  : SmootherException(description) {}
+  explicit SmootherTimedOut(const std::string& description) : SmootherException(description) {}
 };
 
-class SmoothedPathInCollision : public SmootherException
-{
+class SmoothedPathInCollision : public SmootherException {
 public:
-  explicit SmoothedPathInCollision(const std::string & description)
-  : SmootherException(description) {}
+  explicit SmoothedPathInCollision(const std::string& description)
+      : SmootherException(description) {}
 };
 
-class FailedToSmoothPath : public SmootherException
-{
+class FailedToSmoothPath : public SmootherException {
 public:
-  explicit FailedToSmoothPath(const std::string & description)
-  : SmootherException(description) {}
+  explicit FailedToSmoothPath(const std::string& description) : SmootherException(description) {}
 };
 
 }  // namespace nav2_core

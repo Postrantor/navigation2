@@ -12,46 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "nav2_behavior_tree/plugins/action/navigate_to_pose_action.hpp"
+
 #include <memory>
 #include <string>
 
-#include "nav2_behavior_tree/plugins/action/navigate_to_pose_action.hpp"
-
-namespace nav2_behavior_tree
-{
+namespace nav2_behavior_tree {
 
 NavigateToPoseAction::NavigateToPoseAction(
-  const std::string & xml_tag_name,
-  const std::string & action_name,
-  const BT::NodeConfiguration & conf)
-: BtActionNode<Action>(xml_tag_name, action_name, conf)
-{}
+    const std::string& xml_tag_name,
+    const std::string& action_name,
+    const BT::NodeConfiguration& conf)
+    : BtActionNode<Action>(xml_tag_name, action_name, conf) {}
 
-void NavigateToPoseAction::on_tick()
-{
+void NavigateToPoseAction::on_tick() {
   if (!getInput("goal", goal_.pose)) {
-    RCLCPP_ERROR(
-      node_->get_logger(),
-      "NavigateToPoseAction: goal not provided");
+    RCLCPP_ERROR(node_->get_logger(), "NavigateToPoseAction: goal not provided");
     return;
   }
   getInput("behavior_tree", goal_.behavior_tree);
 }
 
-BT::NodeStatus NavigateToPoseAction::on_success()
-{
+BT::NodeStatus NavigateToPoseAction::on_success() {
   setOutput("error_code_id", ActionGoal::NONE);
   return BT::NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus NavigateToPoseAction::on_aborted()
-{
+BT::NodeStatus NavigateToPoseAction::on_aborted() {
   setOutput("error_code_id", result_.result->error_code);
   return BT::NodeStatus::FAILURE;
 }
 
-BT::NodeStatus NavigateToPoseAction::on_cancelled()
-{
+BT::NodeStatus NavigateToPoseAction::on_cancelled() {
   // Set empty error code, action was cancelled
   setOutput("error_code_id", ActionGoal::NONE);
   return BT::NodeStatus::SUCCESS;
@@ -60,15 +52,11 @@ BT::NodeStatus NavigateToPoseAction::on_cancelled()
 }  // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
-BT_REGISTER_NODES(factory)
-{
-  BT::NodeBuilder builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
-    {
-      return std::make_unique<nav2_behavior_tree::NavigateToPoseAction>(
+BT_REGISTER_NODES(factory) {
+  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config) {
+    return std::make_unique<nav2_behavior_tree::NavigateToPoseAction>(
         name, "navigate_to_pose", config);
-    };
+  };
 
-  factory.registerBuilder<nav2_behavior_tree::NavigateToPoseAction>(
-    "NavigateToPose", builder);
+  factory.registerBuilder<nav2_behavior_tree::NavigateToPoseAction>("NavigateToPose", builder);
 }

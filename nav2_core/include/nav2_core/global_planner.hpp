@@ -17,65 +17,71 @@
 
 #include <memory>
 #include <string>
-#include "rclcpp/rclcpp.hpp"
-#include "nav2_costmap_2d/costmap_2d_ros.hpp"
-#include "tf2_ros/buffer.h"
-#include "nav_msgs/msg/path.hpp"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "nav2_util/lifecycle_node.hpp"
 
-namespace nav2_core
-{
+#include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_costmap_2d/costmap_2d_ros.hpp"
+#include "nav2_util/lifecycle_node.hpp"
+#include "nav_msgs/msg/path.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "tf2_ros/buffer.h"
+
+namespace nav2_core {
 
 /**
  * @class GlobalPlanner
- * @brief Abstract interface for global planners to adhere to with pluginlib
+ * @brief 全局规划器的抽象接口，插件库需遵循此接口 (Abstract interface for global planners to adhere
+ * to with pluginlib)
  */
-class GlobalPlanner
-{
+class GlobalPlanner {
 public:
+  // 使用智能指针定义 Ptr 类型（Define Ptr type using smart pointer）
   using Ptr = std::shared_ptr<GlobalPlanner>;
 
   /**
-   * @brief Virtual destructor
+   * @brief 虚拟析构函数 (Virtual destructor)
    */
   virtual ~GlobalPlanner() {}
 
   /**
-   * @param  parent pointer to user's node
-   * @param  name The name of this planner
-   * @param  tf A pointer to a TF buffer
-   * @param  costmap_ros A pointer to the costmap
+   * @param  parent 用户节点的指针 (pointer to user's node)
+   * @param  name 本规划器的名称 (The name of this planner)
+   * @param  tf 指向 TF 缓冲区的指针 (A pointer to a TF buffer)
+   * @param  costmap_ros 指向 costmap 的指针 (A pointer to the costmap)
    */
   virtual void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    std::string name, std::shared_ptr<tf2_ros::Buffer> tf,
-    std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros) = 0;
+      const rclcpp_lifecycle::LifecycleNode::WeakPtr& parent,
+      std::string name,
+      std::shared_ptr<tf2_ros::Buffer> tf,
+      std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros) = 0;
 
   /**
-   * @brief Method to cleanup resources used on shutdown.
+   * @brief 清理资源的方法，在关闭时使用 (Method to cleanup resources used on shutdown)
    */
   virtual void cleanup() = 0;
 
   /**
-   * @brief Method to active planner and any threads involved in execution.
+   * @brief 激活规划器及其执行所涉及的任何线程的方法 (Method to active planner and any threads
+   * involved in execution)
    */
   virtual void activate() = 0;
 
   /**
-   * @brief Method to deactive planner and any threads involved in execution.
+   * @brief 停用规划器及其执行所涉及的任何线程的方法 (Method to deactivate planner and any threads
+   * involved in execution)
    */
   virtual void deactivate() = 0;
 
   /**
-   * @brief Method create the plan from a starting and ending goal.
-   * @param start The starting pose of the robot
-   * @param goal  The goal pose of the robot
-   * @return      The sequence of poses to get from start to goal, if any
+   * @brief 从开始和结束目标创建计划的方法 (Method to create the plan from a starting and ending
+   * goal)
+   * @param start 机器人的起始姿态 (The starting pose of the robot)
+   * @param goal  机器人的目标姿态 (The goal pose of the robot)
+   * @return      从起点到终点的姿态序列，如果有的话 (The sequence of poses to get from start to
+   * goal, if any)
    */
   virtual nav_msgs::msg::Path createPlan(
-    const geometry_msgs::msg::PoseStamped & start,
-    const geometry_msgs::msg::PoseStamped & goal) = 0;
+      const geometry_msgs::msg::PoseStamped& start,
+      const geometry_msgs::msg::PoseStamped& goal) = 0;
 };
 
 }  // namespace nav2_core

@@ -17,24 +17,35 @@
 
 #include <string>
 
-#include "nav2_msgs/action/compute_path_to_pose.hpp"
 #include "nav2_behavior_tree/plugins/condition/are_error_codes_present_condition.hpp"
+#include "nav2_msgs/action/compute_path_to_pose.hpp"
 
 namespace nav2_behavior_tree
 {
 
+/**
+ * @class WouldAPlannerRecoveryHelp
+ * @brief 判断是否需要进行规划器恢复的类 (Class to determine if a planner recovery is needed)
+ * @details 继承自 AreErrorCodesPresent 类 (Inherits from the AreErrorCodesPresent class)
+ */
 class WouldAPlannerRecoveryHelp : public AreErrorCodesPresent
 {
+  // 使用 nav2_msgs::action::ComputePathToPose 动作 (Use the nav2_msgs::action::ComputePathToPose action)
   using Action = nav2_msgs::action::ComputePathToPose;
+  // 使用 Action::Goal 类型定义 ActionGoal (Define ActionGoal as type Action::Goal)
   using ActionGoal = Action::Goal;
 
 public:
-  WouldAPlannerRecoveryHelp(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf);
+  /**
+   * @brief 构造函数 (Constructor)
+   * @param condition_name 条件名称 (Condition name)
+   * @param conf 节点配置 (Node configuration)
+   */
+  WouldAPlannerRecoveryHelp(const std::string & condition_name, const BT::NodeConfiguration & conf);
 
+  // 删除默认构造函数 (Delete the default constructor)
   WouldAPlannerRecoveryHelp() = delete;
 };
 
-}  // namespace nav2_behavior_tree
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__WOULD_A_PLANNER_RECOVERY_HELP_CONDITION_HPP_
+} // namespace nav2_behavior_tree
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__WOULD_A_PLANNER_RECOVERY_HELP_CONDITION_HPP_

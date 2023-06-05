@@ -17,56 +17,42 @@
 #include <stdexcept>
 #include <string>
 
-namespace nav2_core
-{
+namespace nav2_core {
 
-class ControllerException : public std::runtime_error
-{
+class ControllerException : public std::runtime_error {
 public:
-  explicit ControllerException(const std::string & description)
-  : std::runtime_error(description) {}
+  explicit ControllerException(const std::string& description) : std::runtime_error(description) {}
 };
 
-class InvalidController : public ControllerException
-{
+class InvalidController : public ControllerException {
 public:
-  explicit InvalidController(const std::string & description)
-  : ControllerException(description) {}
+  explicit InvalidController(const std::string& description) : ControllerException(description) {}
 };
 
-class ControllerTFError : public ControllerException
-{
+class ControllerTFError : public ControllerException {
 public:
-  explicit ControllerTFError(const std::string & description)
-  : ControllerException(description) {}
+  explicit ControllerTFError(const std::string& description) : ControllerException(description) {}
 };
 
-class FailedToMakeProgress : public ControllerException
-{
+class FailedToMakeProgress : public ControllerException {
 public:
-  explicit FailedToMakeProgress(const std::string & description)
-  : ControllerException(description) {}
+  explicit FailedToMakeProgress(const std::string& description)
+      : ControllerException(description) {}
 };
 
-class PatienceExceeded : public ControllerException
-{
+class PatienceExceeded : public ControllerException {
 public:
-  explicit PatienceExceeded(const std::string & description)
-  : ControllerException(description) {}
+  explicit PatienceExceeded(const std::string& description) : ControllerException(description) {}
 };
 
-class InvalidPath : public ControllerException
-{
+class InvalidPath : public ControllerException {
 public:
-  explicit InvalidPath(const std::string & description)
-  : ControllerException(description) {}
+  explicit InvalidPath(const std::string& description) : ControllerException(description) {}
 };
 
-class NoValidControl : public ControllerException
-{
+class NoValidControl : public ControllerException {
 public:
-  explicit NoValidControl(const std::string & description)
-  : ControllerException(description) {}
+  explicit NoValidControl(const std::string& description) : ControllerException(description) {}
 };
 
 }  // namespace nav2_core

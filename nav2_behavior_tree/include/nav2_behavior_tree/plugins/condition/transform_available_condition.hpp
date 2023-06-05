@@ -15,68 +15,73 @@
 #ifndef NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__TRANSFORM_AVAILABLE_CONDITION_HPP_
 #define NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__TRANSFORM_AVAILABLE_CONDITION_HPP_
 
-#include <string>
 #include <atomic>
 #include <memory>
+#include <string>
 
-#include "rclcpp/rclcpp.hpp"
 #include "behaviortree_cpp_v3/condition_node.h"
+#include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/buffer.h"
 
 namespace nav2_behavior_tree
 {
 
 /**
- * @brief A BT::ConditionNode that returns SUCCESS if there is a valid transform
- * between two specified frames and FAILURE otherwise
+ * @brief 一个BT::ConditionNode，如果两个指定的帧之间有有效的转换，则返回SUCCESS，否则返回FAILURE
+ *        (A BT::ConditionNode that returns SUCCESS if there is a valid transform
+ *        between two specified frames and FAILURE otherwise)
  */
 class TransformAvailableCondition : public BT::ConditionNode
 {
 public:
   /**
-   * @brief A constructor for nav2_behavior_tree::TransformAvailableCondition
-   * @param condition_name Name for the XML tag for this node
-   * @param conf BT node configuration
+   * @brief nav2_behavior_tree::TransformAvailableCondition的构造函数
+   *        (A constructor for nav2_behavior_tree::TransformAvailableCondition)
+   * @param condition_name 用于此节点的XML标签的名称 (Name for the XML tag for this node)
+   * @param conf BT节点配置 (BT node configuration)
    */
   TransformAvailableCondition(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf);
+    const std::string & condition_name, const BT::NodeConfiguration & conf);
 
+  // 删除默认构造函数 (Delete default constructor)
   TransformAvailableCondition() = delete;
 
   /**
-   * @brief A destructor for nav2_behavior_tree::TransformAvailableCondition
+   * @brief nav2_behavior_tree::TransformAvailableCondition的析构函数
+   *        (A destructor for nav2_behavior_tree::TransformAvailableCondition)
    */
   ~TransformAvailableCondition();
 
   /**
-   * @brief The main override required by a BT action
-   * @return BT::NodeStatus Status of tick execution
+   * @brief 主要需要由BT操作覆盖的方法 (The main override required by a BT action)
+   * @return BT::NodeStatus 执行tick状态 (Status of tick execution)
    */
   BT::NodeStatus tick() override;
 
   /**
-   * @brief Creates list of BT ports
-   * @return BT::PortsList Containing node-specific ports
+   * @brief 创建BT端口列表 (Creates list of BT ports)
+   * @return BT::PortsList 包含节点特定端口的列表 (List containing node-specific ports)
    */
   static BT::PortsList providedPorts()
   {
-    return {
-      BT::InputPort<std::string>("child", std::string(), "Child frame for transform"),
-      BT::InputPort<std::string>("parent", std::string(), "parent frame for transform")
-    };
+    return {// 孩子帧的输入端口 (Input port for child frame)
+            BT::InputPort<std::string>("child", std::string(), "Child frame for transform"),
+            // 父帧的输入端口 (Input port for parent frame)
+            BT::InputPort<std::string>("parent", std::string(), "parent frame for transform")};
   }
 
 private:
-  rclcpp::Node::SharedPtr node_;
-  std::shared_ptr<tf2_ros::Buffer> tf_;
+  rclcpp::Node::SharedPtr node_; // ROS2节点共享指针 (Shared pointer to a ROS2 node)
+  std::shared_ptr<tf2_ros::Buffer>
+    tf_; // tf2_ros缓冲区共享指针 (Shared pointer to a tf2_ros buffer)
 
-  std::atomic<bool> was_found_;
+  std::atomic<bool>
+    was_found_; // 原子布尔值表示是否找到转换 (Atomic bool indicating if the transform was found)
 
-  std::string child_frame_;
-  std::string parent_frame_;
+  std::string child_frame_; // 孩子帧的字符串表示 (String representation of the child frame)
+  std::string parent_frame_; // 父帧的字符串表示 (String representation of the parent frame)
 };
 
-}  // namespace nav2_behavior_tree
+} // namespace nav2_behavior_tree
 
-#endif  // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__TRANSFORM_AVAILABLE_CONDITION_HPP_
+#endif // NAV2_BEHAVIOR_TREE__PLUGINS__CONDITION__TRANSFORM_AVAILABLE_CONDITION_HPP_

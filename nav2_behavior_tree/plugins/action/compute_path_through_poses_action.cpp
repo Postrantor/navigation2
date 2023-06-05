@@ -12,25 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "nav2_behavior_tree/plugins/action/compute_path_through_poses_action.hpp"
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "nav2_behavior_tree/plugins/action/compute_path_through_poses_action.hpp"
-
-namespace nav2_behavior_tree
-{
+namespace nav2_behavior_tree {
 
 ComputePathThroughPosesAction::ComputePathThroughPosesAction(
-  const std::string & xml_tag_name,
-  const std::string & action_name,
-  const BT::NodeConfiguration & conf)
-: BtActionNode<nav2_msgs::action::ComputePathThroughPoses>(xml_tag_name, action_name, conf)
-{
-}
+    const std::string& xml_tag_name,
+    const std::string& action_name,
+    const BT::NodeConfiguration& conf)
+    : BtActionNode<nav2_msgs::action::ComputePathThroughPoses>(xml_tag_name, action_name, conf) {}
 
-void ComputePathThroughPosesAction::on_tick()
-{
+void ComputePathThroughPosesAction::on_tick() {
   getInput("goals", goal_.goals);
   getInput("planner_id", goal_.planner_id);
   if (getInput("start", goal_.start)) {
@@ -38,24 +34,21 @@ void ComputePathThroughPosesAction::on_tick()
   }
 }
 
-BT::NodeStatus ComputePathThroughPosesAction::on_success()
-{
+BT::NodeStatus ComputePathThroughPosesAction::on_success() {
   setOutput("path", result_.result->path);
   // Set empty error code, action was successful
   setOutput("error_code_id", ActionGoal::NONE);
   return BT::NodeStatus::SUCCESS;
 }
 
-BT::NodeStatus ComputePathThroughPosesAction::on_aborted()
-{
+BT::NodeStatus ComputePathThroughPosesAction::on_aborted() {
   nav_msgs::msg::Path empty_path;
   setOutput("path", empty_path);
   setOutput("error_code_id", result_.result->error_code);
   return BT::NodeStatus::FAILURE;
 }
 
-BT::NodeStatus ComputePathThroughPosesAction::on_cancelled()
-{
+BT::NodeStatus ComputePathThroughPosesAction::on_cancelled() {
   nav_msgs::msg::Path empty_path;
   setOutput("path", empty_path);
   // Set empty error code, action was cancelled
@@ -66,15 +59,12 @@ BT::NodeStatus ComputePathThroughPosesAction::on_cancelled()
 }  // namespace nav2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
-BT_REGISTER_NODES(factory)
-{
-  BT::NodeBuilder builder =
-    [](const std::string & name, const BT::NodeConfiguration & config)
-    {
-      return std::make_unique<nav2_behavior_tree::ComputePathThroughPosesAction>(
+BT_REGISTER_NODES(factory) {
+  BT::NodeBuilder builder = [](const std::string& name, const BT::NodeConfiguration& config) {
+    return std::make_unique<nav2_behavior_tree::ComputePathThroughPosesAction>(
         name, "compute_path_through_poses", config);
-    };
+  };
 
   factory.registerBuilder<nav2_behavior_tree::ComputePathThroughPosesAction>(
-    "ComputePathThroughPoses", builder);
+      "ComputePathThroughPoses", builder);
 }
