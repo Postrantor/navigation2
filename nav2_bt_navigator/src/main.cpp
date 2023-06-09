@@ -66,14 +66,24 @@ int main(int argc, char** argv) {
 ## 进一步的对 `node->get_node_base_interface()` 解释一下
 
 `node->get_node_base_interface()` 是一个 ROS 2 C++ API，用于获取节点的基础接口。在 ROS 2
-中，节点是一个独立的进程或线程，负责执行特定的任务。节点可以发布和订阅话题、提供和使用服务、创建定时器和回调函数等。
+中，**节点是一个独立的进程或线程，负责执行特定的任务**。节点可以发布和订阅话题、提供和使用服务、创建定时器和回调函数等。
 
-  `rclcpp::node_interfaces::NodeBaseInterface`
+`rclcpp::node_interfaces::NodeBaseInterface`
 接口提供了一组函数，用于管理节点的基本功能。这些功能包括获取节点名称、创建发布者和订阅者、创建服务和客户端、创建定时器和回调函数等。通过获取节点的基础接口，我们可以使用这些函数来实现节点的各种功能。
 
-  例如，在ROS 2中，要创建一个发布者，我们需要使用节点的基础接口来创建一个 `rclcpp::Publisher`
+例如，在ROS 2中，要创建一个发布者，我们需要使用节点的基础接口来创建一个 `rclcpp::Publisher`
 对象。同样地，要创建一个订阅者，我们需要使用节点的基础接口来创建一个 `rclcpp::Subscription` 对象。
 
-  因此，`node->get_node_base_interface()` 函数是获取节点基础接口的关键步骤之一，它允许我们使用 ROS 2
+因此，`node->get_node_base_interface()` 函数是获取节点基础接口的关键步骤之一，它允许我们使用 ROS 2
 C++ API 来管理节点的各种功能。
+
+## 如何通过接口创建发布者和订阅者
+
+其中，`create_publisher()` 函数用于创建一个指定类型的发布者，`create_subscription()` 函数用于创建一个指定类型的订阅者。这两个函数都需要传入一个话题名称和一个 QoS 历史深度参数，以及一些其他的选项参数。
+
+在这两个函数内部，会调用 `rcl_create_publisher()` 和 `rcl_create_subscription()` 函数来创建真正的发布者和订阅者。这两个函数是 ROS 2 C 库中的函数，用于创建发布者和订阅者的实例，并将其注册到 ROS 2 网络中。
+
+最后，`create_publisher()` 和 `create_subscription()` 函数会返回一个 `std::shared_ptr` 类型的对象，该对象包含了指向创建的发布者或订阅者的指针。这个对象可以被用于在程序中引用发布者或订阅者，并进行相应的操作。
+
+因此，通过节点基础接口提供的 `create_publisher()` 和 `create_subscription()` 函数，我们可以方便地创建发布者和订阅者，并在程序中使用它们来进行消息的发布和订阅。
 */

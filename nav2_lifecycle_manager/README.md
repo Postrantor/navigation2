@@ -13,7 +13,7 @@ See its [Configuration Guide Page](https://navigation.ros.org/configuration/pack
 > 查看[配置指南页面](https://navigation.ros.org/configuration/packages/configuring-lifecycle.html)了解更多参数描述。
 
 > [!NOTE]
-> ()[D:\Document\Hirain\Project\rolling\ros-planning\navigation2\nav2_planner\src\planner_server.cpp]
+> [](D:\Document\Hirain\Project\rolling\ros-planning\navigation2\nav2_planner\src\planner_server.cpp)
 
 ### nav2_lifecycle_manager
 
