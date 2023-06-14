@@ -20,96 +20,120 @@
 
 #include "lifecycle_msgs/msg/state.hpp"
 
-namespace nav2_util
-{
+namespace nav2_util {
 
+/*
+  其中，LifecycleNode类继承自rclcpp_lifecycle::LifecycleNode，实现了节点的生命周期管理功能。
+  - 在构造函数中，设置了永不超时的参数，并注册了rcl_preshutdown_callback回调函数；
+  - 在析构函数中，销毁节点并移除rcl_preshutdown_callback回调函数；
+  - 在createBond函数中，创建bond连接到lifecycle manager，并设置心跳周期和超时时间。
+*/
+
+/**
+ * @brief LifecycleNode类的构造函数
+ * @param node_name 节点名称
+ * @param ns 命名空间
+ * @param options 节点选项
+ * @details 构造函数继承自rclcpp_lifecycle::LifecycleNode，实现了节点的生命周期管理功能。
+ */
 LifecycleNode::LifecycleNode(
-  const std::string & node_name,
-  const std::string & ns,
-  const rclcpp::NodeOptions & options)
-: rclcpp_lifecycle::LifecycleNode(node_name, ns, options)
-{
+    const std::string& node_name,  //
+    const std::string& ns,         //
+    const rclcpp::NodeOptions& options)
+    : rclcpp_lifecycle::LifecycleNode(node_name, ns, options) {
   // server side never times out from lifecycle manager
+  // 设置永不超时
   this->declare_parameter(bond::msg::Constants::DISABLE_HEARTBEAT_TIMEOUT_PARAM, true);
   this->set_parameter(
-    rclcpp::Parameter(
-      bond::msg::Constants::DISABLE_HEARTBEAT_TIMEOUT_PARAM, true));
+      rclcpp::Parameter(bond::msg::Constants::DISABLE_HEARTBEAT_TIMEOUT_PARAM, true));
 
+  // 打印生命周期通知
   printLifecycleNodeNotification();
 
+  // 注册rcl_preshutdown_callback回调函数
   register_rcl_preshutdown_callback();
 }
 
-LifecycleNode::~LifecycleNode()
-{
+/**
+ * @brief LifecycleNode类的析构函数
+ * @details 析构函数销毁节点并移除rcl_preshutdown_callback回调函数。
+ */
+LifecycleNode::~LifecycleNode() {
   RCLCPP_INFO(get_logger(), "Destroying");
 
+  // 运行清理函数
   runCleanups();
 
   if (rcl_preshutdown_cb_handle_) {
+    // 获取节点上下文
     rclcpp::Context::SharedPtr context = get_node_base_interface()->get_context();
+    // 移除rcl_preshutdown_callback回调函数
     context->remove_pre_shutdown_callback(*(rcl_preshutdown_cb_handle_.get()));
     rcl_preshutdown_cb_handle_.reset();
   }
 }
 
-void LifecycleNode::createBond()
-{
+/**
+ * @brief 创建bond连接到lifecycle manager
+ * @details 创建bond连接到lifecycle manager，并设置心跳周期和超时时间。
+ *
+ * 这些支持设置的参数可以考虑
+ */
+void LifecycleNode::createBond() {
   RCLCPP_INFO(get_logger(), "Creating bond (%s) to lifecycle manager.", this->get_name());
 
-  bond_ = std::make_unique<bond::Bond>(
-    std::string("bond"),
-    this->get_name(),
-    shared_from_this());
+  // 创建bond连接
+  bond_ = std::make_unique<bond::Bond>(std::string("bond"), this->get_name(), shared_from_this());
 
+  // 设置心跳周期和超时时间
   bond_->setHeartbeatPeriod(0.10);
   bond_->setHeartbeatTimeout(4.0);
   bond_->start();
 }
 
-void LifecycleNode::runCleanups()
-{
-  /*
-   * In case this lifecycle node wasn't properly shut down, do it here.
-   * We will give the user some ability to clean up properly here, but it's
-   * best effort; i.e. we aren't trying to account for all possible states.
-   */
-  if (get_current_state().id() ==
-    lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE)
-  {
+/**
+ * @brief 运行清理函数
+ * @details 如果此生命周期节点没有被正确关闭，则在此处进行关闭。
+ *         我们将为用户提供一些适当的清理能力，但这是最好的努力；即我们不会尝试考虑所有可能的状态。
+ */
+void LifecycleNode::runCleanups() {
+  if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE) {
     this->deactivate();
   }
 
-  if (get_current_state().id() ==
-    lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE)
-  {
+  if (get_current_state().id() == lifecycle_msgs::msg::State::PRIMARY_STATE_INACTIVE) {
     this->cleanup();
   }
 }
 
-void LifecycleNode::on_rcl_preshutdown()
-{
-  RCLCPP_INFO(
-    get_logger(), "Running Nav2 LifecycleNode rcl preshutdown (%s)",
-    this->get_name());
+/**
+ * @brief rcl preshutdown回调函数
+ * @details 在rcl preshutdown时运行Nav2 LifecycleNode，用于清理和销毁bond
+ */
+void LifecycleNode::on_rcl_preshutdown() {
+  RCLCPP_INFO(get_logger(), "Running Nav2 LifecycleNode rcl preshutdown (%s)", this->get_name());
 
   runCleanups();
 
   destroyBond();
 }
 
-void LifecycleNode::register_rcl_preshutdown_callback()
-{
+/**
+ * @brief 注册rcl preshutdown回调函数
+ * @details 获取节点基础接口的上下文，并添加rcl preshutdown回调函数
+ */
+void LifecycleNode::register_rcl_preshutdown_callback() {
   rclcpp::Context::SharedPtr context = get_node_base_interface()->get_context();
 
   rcl_preshutdown_cb_handle_ = std::make_unique<rclcpp::PreShutdownCallbackHandle>(
-    context->add_pre_shutdown_callback(
-      std::bind(&LifecycleNode::on_rcl_preshutdown, this))
-  );
+      context->add_pre_shutdown_callback(std::bind(&LifecycleNode::on_rcl_preshutdown, this)));
 }
 
-void LifecycleNode::destroyBond()
-{
+/**
+ * @brief 销毁bond
+ * @details 销毁与lifecycle manager之间的bond
+ */
+void LifecycleNode::destroyBond() {
   RCLCPP_INFO(get_logger(), "Destroying bond (%s) to lifecycle manager.", this->get_name());
 
   if (bond_) {
@@ -117,13 +141,18 @@ void LifecycleNode::destroyBond()
   }
 }
 
-void LifecycleNode::printLifecycleNodeNotification()
-{
+/**
+ * @brief 打印生命周期节点通知
+ * @details 打印生命周期节点启动信息，等待外部生命周期转换以激活。
+ *        更多信息请参见https://design.ros2.org/articles/node_lifecycle.html。
+ */
+void LifecycleNode::printLifecycleNodeNotification() {
   RCLCPP_INFO(
-    get_logger(),
-    "\n\t%s lifecycle node launched. \n"
-    "\tWaiting on external lifecycle transitions to activate\n"
-    "\tSee https://design.ros2.org/articles/node_lifecycle.html for more information.", get_name());
+      get_logger(),
+      "\n\t%s lifecycle node launched. \n"
+      "\tWaiting on external lifecycle transitions to activate\n"
+      "\tSee https://design.ros2.org/articles/node_lifecycle.html for more information.",
+      get_name());
 }
 
 }  // namespace nav2_util

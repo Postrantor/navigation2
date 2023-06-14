@@ -10,12 +10,27 @@ Using ROS2’s managed/lifecycle nodes feature allows the system startup to ensu
 
 See its [Configuration Guide Page](https://navigation.ros.org/configuration/packages/configuring-lifecycle.html) for additional parameter descriptions.
 
-> 查看[配置指南页面](D:\Document\Hirain\Project\rolling\ros-planning\navigation.ros.org\configuration\packages\configuring-lifecycle.md)了解更多参数描述。
+> 查看[配置指南页面](../../navigation.ros.org/configuration/packages/configuring-lifecycle.md)了解更多参数描述。
 
 > [!NOTE]
-> 这个是怎么用 lifecycle 的示例
+> .[这个是怎么用 lifecycle 的示例](..\nav2_planner\src\planner_server.cpp)
 >
-> - [](..\nav2_planner\src\planner_server.cpp)
+> ```yaml
+> lifecycle_manager:
+>   ros__parameters:
+>     autostart: true
+>     node_names:
+>       [
+>         "controller_server",
+>         "planner_server",
+>         "behavior_server",
+>         "bt_navigator",
+>         "waypoint_follower",
+>       ]
+>     bond_timeout: 4.0
+>     attempt_respawn_reconnection: true
+>     bond_respawn_max_duration: 10.0
+> ```
 
 ### nav2_lifecycle_manager
 
@@ -25,7 +40,8 @@ See its [Configuration Guide Page](https://navigation.ros.org/configuration/pack
 
 Nav2's lifecycle manager is used to change the states of the lifecycle nodes in order to achieve a controlled _startup_, _shutdown_, _reset_, _pause_, or _resume_ of the navigation stack. The lifecycle manager presents a `lifecycle_manager/manage_nodes` service, from which clients can invoke the startup, shutdown, reset, pause, or resume functions. Based on this service request, the lifecycle manager calls the necessary lifecycle services in the lifecycle managed nodes. Currently, the RVIZ panel uses this `lifecycle_manager/manage_nodes` service when user presses the buttons on the RVIZ panel (e.g.,startup, reset, shutdown, etc.), but it is meant to be called on bringup through a production system application.
 
-> **Nav2 的生命周期管理器用于更改生命周期节点的状态，以实现导航堆栈的受控启动、关闭、重置、暂停或恢复**。生命周期管理器提供了一个`lifecycle_manager/manage_nodes`服务，客户端可以调用启动、关闭、重置、暂停或恢复功能。**根据此服务请求，生命周期管理器会调用生命周期管理节点中必要的生命周期服务**。目前，RVIZ 面板在用户按下 RVIZ 面板上的按钮时(例如启动、重置、关闭等)会调用此`lifecycle_manager/manage_nodes`服务，但它旨在**通过生产系统应用程序在启动时调用**。
+> **Nav2 的生命周期管理器用于更改生命周期节点的状态，以实现导航堆栈的受控启动、关闭、重置、暂停或恢复**。生命周期管理器提供了一个`lifecycle_manager/manage_nodes`服务，客户端可以调用启动、关闭、重置、暂停或恢复功能。**根据此服务请求，生命周期管理器(lifecycle manager)会调用生命周期管理节点(lifecycle managed nodes)中必要的生命周期服务**。
+> 目前，RVIZ 面板在用户按下 RVIZ 面板上的按钮时(例如启动、重置、关闭等)会调用此`lifecycle_manager/manage_nodes`服务，但它旨在**通过生产系统应用程序在启动时调用**。
 
 In order to start the navigation stack and be able to navigate, the necessary nodes must be configured and activated. Thus, for example when _startup_ is requested from the lifecycle manager's `manage_nodes` service, the lifecycle managers calls _configure()_ and _activate()_ on the lifecycle enabled nodes in the node list. These are all transitioned in ordered groups for bringup transitions, and reverse ordered groups for shutdown transitions.
 

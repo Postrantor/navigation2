@@ -43,10 +43,10 @@ namespace nav2_planner {
  * @brief PlannerServer的构造函数，继承自nav2_util::LifecycleNode
  * @param options 节点选项
  * @details
- * 初始化全局规划器加载器gp_loader_、默认规划器名称default_ids_和默认规划器类型default_types_，
- *          并声明节点参数planner_plugins和expected_planner_frequency，
- *          如果planner_plugins与default_ids_相等，则为每个默认规划器名称声明一个对应的规划器类型参数。
- *          初始化全局代价地图costmap_ros_，并启动一个线程运行代价地图节点。
+ *     初始化全局规划器加载器gp_loader_、默认规划器名称default_ids_和默认规划器类型default_types_，
+ *     并声明节点参数planner_plugins和expected_planner_frequency，
+ *     如果planner_plugins与default_ids_相等，则为每个默认规划器名称声明一个对应的规划器类型参数。
+ *     初始化全局代价地图costmap_ros_，并启动一个线程运行代价地图节点。
  */
 PlannerServer::PlannerServer(const rclcpp::NodeOptions &options)
     // 调用基类构造函数，设置节点名称为"planner_server"
@@ -105,7 +105,6 @@ PlannerServer::~PlannerServer() {
 
 /**
  * @brief 当组件被配置时调用的函数，主要作用是初始化全局规划器。
- *
  * @param state 生命周期状态
  * @return nav2_util::CallbackReturn 返回成功或失败
  */
@@ -190,19 +189,19 @@ nav2_util::CallbackReturn PlannerServer::on_configure(const rclcpp_lifecycle::St
  * @brief 激活回调函数，用于在组件激活时执行一些初始化操作
  * @param state 组件状态，类型为 rclcpp_lifecycle::State，未使用
  * @return nav2_util::CallbackReturn::SUCCESS 表示激活成功
+ * @details
+ *     当 PlannerServer 组件被激活时，会调用该回调函数，进行一些必要的初始化操作。
+ *     具体包括：
+ *       1. 激活 plan_publisher_ 发布者；
+ *       2. 激活 action_server_pose_ 行为服务器；
+ *       3. 激活 action_server_poses_ 行为服务器；
+ *       4. 激活 costmap_ros_ 实例；
+ *       5. 遍历所有的规划器实例，并逐个激活；
+ *       6. 创建 is_path_valid 服务，用于检查路径是否有效；
+ *       7. 添加动态参数回调函数；
+ *       8. 创建 bond 连接。
  *
- * 当 PlannerServer 组件被激活时，会调用该回调函数，进行一些必要的初始化操作。
- * 具体包括：
- *   1. 激活 plan_publisher_ 发布者；
- *   2. 激活 action_server_pose_ 行为服务器；
- *   3. 激活 action_server_poses_ 行为服务器；
- *   4. 激活 costmap_ros_ 实例；
- *   5. 遍历所有的规划器实例，并逐个激活；
- *   6. 创建 is_path_valid 服务，用于检查路径是否有效；
- *   7. 添加动态参数回调函数；
- *   8. 创建 bond 连接。
- *
- * 返回 CallbackReturn::SUCCESS 表示激活成功。
+ *     返回 CallbackReturn::SUCCESS 表示激活成功。
  */
 nav2_util::CallbackReturn PlannerServer::on_activate(const rclcpp_lifecycle::State & /*state*/) {
   // 输出日志信息，表示正在激活 PlannerServer 组件
@@ -242,7 +241,7 @@ nav2_util::CallbackReturn PlannerServer::on_activate(const rclcpp_lifecycle::Sta
  * @brief 当 PlannerServer 被 deactive 时的回调函数
  * @param state 生命周期状态
  * @details 停用 action server 和 plan publisher，同时停用 costmap 和所有的 planner。
- *          销毁 bond 连接，并返回成功的回调结果。
+ *         销毁 bond 连接，并返回成功的回调结果。
  */
 nav2_util::CallbackReturn PlannerServer::on_deactivate(const rclcpp_lifecycle::State & /*state*/) {
   RCLCPP_INFO(get_logger(), "Deactivating");
@@ -285,10 +284,11 @@ nav2_util::CallbackReturn PlannerServer::on_deactivate(const rclcpp_lifecycle::S
 /**
  * @brief 清理函数回调，用于清理 PlannerServer 中的各个组件
  * @param state 生命周期状态
- * @details 该函数用于清理 PlannerServer 中的各个组件，包括 action_server_pose_,
- * action_server_poses_, plan_publisher_, tf_ 等。 同时检查 costmap_ros_ 的状态是否为
- * PRIMARY_STATE_INACTIVE，如果是则调用 costmap_ros_->cleanup() 函数进行清理。 最后清理 planners_
- * 中的所有规划器，并将其清空。返回 nav2_util::CallbackReturn::SUCCESS 表示成功。
+ * @details
+ *     该函数用于清理 PlannerServer 中的各个组件，包括 action_server_pose_,
+ *     action_server_poses_, plan_publisher_, tf_ 等。 同时检查 costmap_ros_ 的状态是否为
+ *     PRIMARY_STATE_INACTIVE，如果是则调用 costmap_ros_->cleanup() 函数进行清理。 最后清理
+ *     planners_ 中的所有规划器，并将其清空。返回 nav2_util::CallbackReturn::SUCCESS 表示成功。
  */
 nav2_util::CallbackReturn PlannerServer::on_cleanup(const rclcpp_lifecycle::State & /*state*/) {
   RCLCPP_INFO(get_logger(), "Cleaning up");
