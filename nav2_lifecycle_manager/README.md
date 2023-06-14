@@ -15,7 +15,7 @@ See its [Configuration Guide Page](https://navigation.ros.org/configuration/pack
 > [!NOTE]
 > 这个是怎么用 lifecycle 的示例
 >
-> - [](D:\Document\Hirain\Project\rolling\ros-planning\navigation2\nav2_planner\src\planner_server.cpp)
+> - [](..\nav2_planner\src\planner_server.cpp)
 
 ### nav2_lifecycle_manager
 
@@ -32,7 +32,7 @@ In order to start the navigation stack and be able to navigate, the necessary no
 > **为了启动导航堆栈并能够导航，必须配置和激活必要的节点**。因此，例如，当从生命周期管理器的 `manage_nodes` 服务请求 _startup_ 时，生命周期管理器调用 _configure()_ 和 _activate()_ 在节点列表中的生命周期启用节点。这些都转换为有序组以进行启动转换，和相反顺序组以进行关机转换。
 
 > [!NOTE]
-> 这里给出 _startup_ 的概念，下属包括 _configure()_ 和 _activate()_。这样**对已有的一些状态进行一些组合**实现具体的业务的要求。
+> 这里给出 _startup_ 的概念，下属包括 _configure()_ 和 _activate()_。这样**对已有的一些状态进行一些组合**实现具体的业务的要求？
 
 The lifecycle manager has a default nodes list for all the nodes that it manages. This list can be changed using the lifecycle manager’s _“node_names”_ parameter.
 

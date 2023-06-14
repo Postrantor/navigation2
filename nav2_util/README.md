@@ -9,4 +9,3 @@ The `nav2_util` package contains utilities abstracted from individual packages w
 - Transformation and robot pose helpers
 
 The long-term aim is for these utilities to find more permanent homes in other packages (within and outside of Nav2) or migrate to the raw tools made available in ROS 2.
- 

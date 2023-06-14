@@ -49,23 +49,26 @@ namespace nav2_planner {
  *          初始化全局代价地图costmap_ros_，并启动一个线程运行代价地图节点。
  */
 PlannerServer::PlannerServer(const rclcpp::NodeOptions &options)
-    : nav2_util::LifecycleNode(
-          "planner_server", "", options),  // 调用基类构造函数，设置节点名称为"planner_server"
-      gp_loader_("nav2_core", "nav2_core::GlobalPlanner"),  // 初始化全局规划器加载器gp_loader_
-      default_ids_{"GridBased"},               // 设置默认规划器名称为"GridBased"
-      default_types_{
-          "nav2_navfn_planner/NavfnPlanner"},  // 设置默认规划器类型为"nav2_navfn_planner/NavfnPlanner"
-      costmap_(nullptr) {                      // 初始化成员变量costmap_
-
-  RCLCPP_INFO(get_logger(), "Creating");  // 输出日志信息
+    // 调用基类构造函数，设置节点名称为"planner_server"
+    : nav2_util::LifecycleNode("planner_server", "", options),
+      // 初始化全局规划器加载器gp_loader_
+      gp_loader_("nav2_core", "nav2_core::GlobalPlanner"),
+      // 设置默认规划器名称为"GridBased"
+      default_ids_{"GridBased"},
+      // 设置默认规划器类型为"nav2_navfn_planner/NavfnPlanner"
+      default_types_{"nav2_navfn_planner/NavfnPlanner"},
+      // 初始化成员变量costmap_
+      costmap_(nullptr) {
+  RCLCPP_INFO(get_logger(), "Creating");
 
   // Declare this node's parameters
-  declare_parameter(
-      "planner_plugins", default_ids_);  // 声明节点参数"planner_plugins"，默认值为"default_ids_"
-  declare_parameter(
-      "expected_planner_frequency", 1.0);  // 声明节点参数"expected_planner_frequency"，默认值为1.0
+  // 声明节点参数"planner_plugins"，默认值为"default_ids_"
+  declare_parameter("planner_plugins", default_ids_);
+  // 声明节点参数"expected_planner_frequency"，默认值为1.0
+  declare_parameter("expected_planner_frequency", 1.0);
 
-  get_parameter("planner_plugins", planner_ids_);  // 获取节点参数"planner_plugins"的值
+  // 获取节点参数"planner_plugins"的值
+  get_parameter("planner_plugins", planner_ids_);
   if (planner_ids_ == default_ids_) {  // 如果"planner_plugins"的值与"default_ids_"相等
     for (size_t i = 0; i < default_ids_.size(); ++i) {  // 遍历默认规划器名称
       declare_parameter(
@@ -74,15 +77,14 @@ PlannerServer::PlannerServer(const rclcpp::NodeOptions &options)
     }
   }
 
-  // Setup the global costmap
-  costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>(  // 创建代价地图ROS节点
+  // 创建代价地图ROS节点
+  costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
       "global_costmap", std::string{get_namespace()},
       "global_costmap",  // 设置节点名称、命名空间和代价地图名称
       get_parameter("use_sim_time")
           .as_bool());  // 获取节点参数"use_sim_time"的值，并传递给代价地图ROS节点
-  // Launch a thread to run the costmap node
-  costmap_thread_ =
-      std::make_unique<nav2_util::NodeThread>(costmap_ros_);  // 启动一个线程运行代价地图ROS节点
+  // 启动一个线程运行代价地图ROS节点
+  costmap_thread_ = std::make_unique<nav2_util::NodeThread>(costmap_ros_);
 }
 
 /**
@@ -98,6 +100,9 @@ PlannerServer::~PlannerServer() {
   costmap_thread_.reset();  // 重置costmap_thread_
 }
 
+/** ========= ========= ========= //
+// ========= ========= ========= **/
+
 /**
  * @brief 当组件被配置时调用的函数，主要作用是初始化全局规划器。
  *
@@ -109,18 +114,14 @@ nav2_util::CallbackReturn PlannerServer::on_configure(const rclcpp_lifecycle::St
 
   // 配置 costmap_ros_ 对象
   costmap_ros_->configure();
-
   // 获取 costmap 对象
   costmap_ = costmap_ros_->getCostmap();
-
-  // 打印 costmap 的大小
   RCLCPP_DEBUG(
       get_logger(), "Costmap size: %d,%d", costmap_->getSizeInCellsX(),
       costmap_->getSizeInCellsY());
 
   // 获取 tf_buffer 对象
   tf_ = costmap_ros_->getTfBuffer();
-
   // 初始化 planner_types_ 数组
   planner_types_.resize(planner_ids_.size());
 
@@ -130,18 +131,14 @@ nav2_util::CallbackReturn PlannerServer::on_configure(const rclcpp_lifecycle::St
     try {
       // 获取 planner_ids_ 对应的插件类型
       planner_types_[i] = nav2_util::get_plugin_type_param(node, planner_ids_[i]);
-
       // 创建 GlobalPlanner 对象
       nav2_core::GlobalPlanner::Ptr planner = gp_loader_.createUniqueInstance(planner_types_[i]);
-
-      // 打印创建的插件信息
       RCLCPP_INFO(
           get_logger(), "Created global planner plugin %s of type %s", planner_ids_[i].c_str(),
           planner_types_[i].c_str());
 
       // 配置 GlobalPlanner 对象
       planner->configure(node, planner_ids_[i], tf_, costmap_ros_);
-
       // 将 GlobalPlanner 对象插入到 planners_ 中
       planners_.insert({planner_ids_[i], planner});
     } catch (const pluginlib::PluginlibException &ex) {
@@ -155,8 +152,6 @@ nav2_util::CallbackReturn PlannerServer::on_configure(const rclcpp_lifecycle::St
   for (size_t i = 0; i != planner_ids_.size(); i++) {
     planner_ids_concat_ += planner_ids_[i] + std::string(" ");
   }
-
-  // 打印可用的 planner_ids_
   RCLCPP_INFO(
       get_logger(), "Planner Server has %s planners available.", planner_ids_concat_.c_str());
 
@@ -198,14 +193,14 @@ nav2_util::CallbackReturn PlannerServer::on_configure(const rclcpp_lifecycle::St
  *
  * 当 PlannerServer 组件被激活时，会调用该回调函数，进行一些必要的初始化操作。
  * 具体包括：
- * 1. 激活 plan_publisher_ 发布者；
- * 2. 激活 action_server_pose_ 行为服务器；
- * 3. 激活 action_server_poses_ 行为服务器；
- * 4. 激活 costmap_ros_ 实例；
- * 5. 遍历所有的规划器实例，并逐个激活；
- * 6. 创建 is_path_valid 服务，用于检查路径是否有效；
- * 7. 添加动态参数回调函数；
- * 8. 创建 bond 连接。
+ *   1. 激活 plan_publisher_ 发布者；
+ *   2. 激活 action_server_pose_ 行为服务器；
+ *   3. 激活 action_server_poses_ 行为服务器；
+ *   4. 激活 costmap_ros_ 实例；
+ *   5. 遍历所有的规划器实例，并逐个激活；
+ *   6. 创建 is_path_valid 服务，用于检查路径是否有效；
+ *   7. 添加动态参数回调函数；
+ *   8. 创建 bond 连接。
  *
  * 返回 CallbackReturn::SUCCESS 表示激活成功。
  */
@@ -213,13 +208,10 @@ nav2_util::CallbackReturn PlannerServer::on_activate(const rclcpp_lifecycle::Sta
   // 输出日志信息，表示正在激活 PlannerServer 组件
   RCLCPP_INFO(get_logger(), "Activating");
 
-  // 激活 plan_publisher_ 发布者
+  // 激活
   plan_publisher_->on_activate();
-  // 激活 action_server_pose_ 行为服务器
   action_server_pose_->activate();
-  // 激活 action_server_poses_ 行为服务器
   action_server_poses_->activate();
-  // 激活 costmap_ros_ 实例
   costmap_ros_->activate();
 
   // 遍历所有的规划器实例，并逐个激活
@@ -243,7 +235,6 @@ nav2_util::CallbackReturn PlannerServer::on_activate(const rclcpp_lifecycle::Sta
   // 创建 bond 连接
   createBond();
 
-  // 返回 CallbackReturn::SUCCESS 表示激活成功
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
@@ -288,7 +279,6 @@ nav2_util::CallbackReturn PlannerServer::on_deactivate(const rclcpp_lifecycle::S
   // 销毁 bond 连接
   destroyBond();
 
-  // 返回成功的回调结果
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
@@ -300,7 +290,6 @@ nav2_util::CallbackReturn PlannerServer::on_deactivate(const rclcpp_lifecycle::S
  * PRIMARY_STATE_INACTIVE，如果是则调用 costmap_ros_->cleanup() 函数进行清理。 最后清理 planners_
  * 中的所有规划器，并将其清空。返回 nav2_util::CallbackReturn::SUCCESS 表示成功。
  */
-
 nav2_util::CallbackReturn PlannerServer::on_cleanup(const rclcpp_lifecycle::State & /*state*/) {
   RCLCPP_INFO(get_logger(), "Cleaning up");
 
@@ -314,7 +303,6 @@ nav2_util::CallbackReturn PlannerServer::on_cleanup(const rclcpp_lifecycle::Stat
    * Double check whether something else transitioned it to INACTIVE
    * already, e.g. the rcl preshutdown callback.
    */
-
   // 检查 costmap_ros_ 的状态是否为 PRIMARY_STATE_INACTIVE，如果是则调用 costmap_ros_->cleanup()
   // 进行清理
   if (costmap_ros_->get_current_state().id() ==
@@ -343,6 +331,9 @@ nav2_util::CallbackReturn PlannerServer::on_shutdown(const rclcpp_lifecycle::Sta
   RCLCPP_INFO(get_logger(), "Shutting down");
   return nav2_util::CallbackReturn::SUCCESS;
 }
+
+// ========= ========= ========= //
+// ========= ========= ========= //
 
 template <typename T>
 bool PlannerServer::isServerInactive(
