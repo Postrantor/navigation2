@@ -131,7 +131,8 @@ protected:
    * @param command 命令。
    */
   bool callService(
-      uint8_t command, const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
+      uint8_t command,  //
+      const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
 
   // 用于服务调用的节点
   rclcpp::Node::SharedPtr node_;

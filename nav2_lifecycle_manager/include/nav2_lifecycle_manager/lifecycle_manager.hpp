@@ -38,11 +38,11 @@ using namespace std::chrono_literals;  // NOLINT
 using nav2_msgs::srv::ManageLifecycleNodes;
 
 /*
-这段代码是navigation2组件中lifecycle_manager_client相关的代码。该类实现了一个服务接口，用于转换Nav2堆栈的生命周期节点。它接收转换请求，然后使用生命周期接口来更改生命周期节点的状态。
+  该类实现了一个服务接口，用于转换Nav2堆栈的生命周期节点。它接收转换请求，然后使用生命周期接口来更改生命周期节点的状态。
 
-该类继承自rclcpp::Node，具有一个构造函数和一个析构函数。其中构造函数带有一个可选参数options，用于控制节点的创建。该类还包括一个回调组callback_group_和一个服务线程service_thread_，以及两个服务manager_srv_和is_active_srv_。其中manager_srv_是用于管理生命周期节点的服务，is_active_srv_则用于检查节点是否处于活动状态。
+  该类继承自rclcpp::Node，具有一个构造函数和一个析构函数。其中构造函数带有一个可选参数options，用于控制节点的创建。该类还包括一个回调组callback_group_和一个服务线程service_thread_，以及两个服务manager_srv_和is_active_srv_。其中manager_srv_是用于管理生命周期节点的服务，is_active_srv_则用于检查节点是否处于活动状态。
 
-此外，该类还包括一个managerCallback()函数，用于处理生命周期节点管理器的回调函数。该函数接收服务请求，并使用生命周期接口更改生命周期节点的状态。
+  此外，该类还包括一个managerCallback()函数，用于处理生命周期节点管理器的回调函数。该函数接收服务请求，并使用生命周期接口更改生命周期节点的状态。
 */
 /**
  * @class nav2_lifecycle_manager::LifecycleManager
@@ -131,25 +131,15 @@ protected:
   void onRclPreshutdown();
 
   // 创建服务客户端的支持函数
-  /**
-   * @brief 用于创建服务客户端的支持函数
-   */
   void createLifecycleServiceClients();
 
   // 支持关闭的函数
-  /**
-   * @brief 关闭所有节点的支持函数
-   */
   void shutdownAllNodes();
-  /**
-   * @brief 销毁所有生命周期服务客户端。
-   */
+
+  // 销毁所有生命周期服务客户端。
   void destroyLifecycleServiceClients();
 
   // 创建绑定计时器的支持函数
-  /**
-   * @brief 创建绑定计时器的支持函数
-   */
   void createBondTimer();
 
   // 创建绑定连接的支持函数
@@ -241,20 +231,23 @@ protected:
   std::chrono::milliseconds bond_timeout_;  // 绑定超时时间
 
   // A map of all nodes to check bond connection
-  std::map<std::string, std::shared_ptr<bond::Bond>> bond_map_;  // 所有节点的绑定映射表
+  // 所有节点的绑定映射表
+  std::map<std::string, std::shared_ptr<bond::Bond>> bond_map_;
 
   // A map of all nodes to be controlled
-  std::map<std::string, std::shared_ptr<nav2_util::LifecycleServiceClient>>
-      node_map_;  // 所有节点的生命周期服务客户端映射表
+  // 所有节点的生命周期服务客户端映射表
+  std::map<std::string, std::shared_ptr<nav2_util::LifecycleServiceClient>> node_map_;
 
-  std::map<std::uint8_t, std::string> transition_label_map_;  // 状态转换标签映射表
+  // 状态转换标签映射表
+  std::map<std::uint8_t, std::string> transition_label_map_;
 
   // A map of the expected transitions to primary states
-  std::unordered_map<std::uint8_t, std::uint8_t>
-      transition_state_map_;  // 预期的状态转换到主状态的映射表
+  // 预期的状态转换到主状态的映射表
+  std::unordered_map<std::uint8_t, std::uint8_t> transition_state_map_;
 
   // The names of the nodes to be managed, in the order of desired bring-up
-  std::vector<std::string> node_names_;  // 要管理的节点名称，按照期望的启动顺序排列
+  // 要管理的节点名称，按照期望的启动顺序排列
+  std::vector<std::string> node_names_;
 
   // Whether to automatically start up the system
   bool autostart_;                                   // 是否自动启动系统
