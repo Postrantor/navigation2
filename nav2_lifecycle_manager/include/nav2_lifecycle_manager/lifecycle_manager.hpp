@@ -38,9 +38,28 @@ using namespace std::chrono_literals;  // NOLINT
 using nav2_msgs::srv::ManageLifecycleNodes;
 
 /*
+  在 manager 中还存在两个用于managerz自身的服务：
+  - manager_srv_是用于管理生命周期节点的服务，
+  - is_active_srv_则用于检查节点是否处于活动状态。
+
+  区别于 ros2_plan_system 中的manager，前者每一个node都有一个manager进行管理
+  这里的manager是用于管理所有的node，从下面的注释就可以看出来？！好像一些操作也是支持单个节点的
+  （虽然提供了单独控制节点的能力，但是都是通过map来维护的，所以这里的manager还是区别于ros2_plan_system的）
+  block 中要设计那种 manager，是管理所有节点的，还是都可以的？
+
+  通过这个函数的具体实现 `createLifecycleServiceClients()`，
+  遍历节点名称列表，为每个节点创建一个生命周期服务客户端，并将其添加到节点映射中
+  这里是对每个node都创建一个client?!
+  这样的话，即使和 ros2_plan_system 中为每一个node创建manager不一样，但是还是有1:1的关系？？？
+
+*/
+
+/*
   该类实现了一个服务接口，用于转换Nav2堆栈的生命周期节点。它接收转换请求，然后使用生命周期接口来更改生命周期节点的状态。
 
-  该类继承自rclcpp::Node，具有一个构造函数和一个析构函数。其中构造函数带有一个可选参数options，用于控制节点的创建。该类还包括一个回调组callback_group_和一个服务线程service_thread_，以及两个服务manager_srv_和is_active_srv_。其中manager_srv_是用于管理生命周期节点的服务，is_active_srv_则用于检查节点是否处于活动状态。
+  该类继承自rclcpp::Node，具有一个构造函数和一个析构函数。
+  其中构造函数带有一个可选参数options，用于控制节点的创建。该类还包括一个回调组callback_group_和一个服务线程service_thread_，以及两个服务manager_srv_和is_active_srv_。
+  其中manager_srv_是用于管理生命周期节点的服务，is_active_srv_则用于检查节点是否处于活动状态。
 
   此外，该类还包括一个managerCallback()函数，用于处理生命周期节点管理器的回调函数。该函数接收服务请求，并使用生命周期接口更改生命周期节点的状态。
 */
@@ -80,6 +99,9 @@ protected:
       const std::shared_ptr<ManageLifecycleNodes::Request> request,
       std::shared_ptr<ManageLifecycleNodes::Response> response);
 
+  // 如果这个是判断被管理的节点，那么在client中的is_active是判断manager的状态？
+  // 这里相对于 ros2_plan_system 就是不一样的方式，前者是每个被管理的节点都配置一个manager
+  // 这里是manager管理所有的节点，所以这里判断的active也是对于所有的节点，不知道是否合理
   /**
    * @brief isActiveCallback函数检查被管理的节点是否处于活动状态。
    * @param request_header 请求头
@@ -142,6 +164,9 @@ protected:
   // 创建绑定计时器的支持函数
   void createBondTimer();
 
+  // ========= ========= ========= //
+  // ========= ========= ========= //
+
   // 创建绑定连接的支持函数
   /**
    * @brief 创建绑定连接的支持函数
@@ -169,6 +194,10 @@ protected:
    * 如果从非响应性转换为响应性，将会重新启动系统
    */
   void checkBondRespawnConnection();
+
+  // ========= ========= ========= //
+  // 从这里看，还是支持对单个节点的控制
+  // ========= ========= ========= //
 
   /**
    * @brief 对于一个节点，将其状态转换到新的目标状态
@@ -208,6 +237,12 @@ protected:
   void registerRclPreshutdownCallback();
 
   /*
+    这里有三个map比较有价值
+    - node_map_：所有节点的生命周期服务客户端映射表。
+    - transition_label_map_：状态转换标签映射表。
+    - transition_state_map_：预期的状态转换到主状态的映射表。
+  */
+  /*
     - init_timer_：初始化定时器，用于检查节点的连接情况。
     - bond_timer_：绑定定时器，用于检查绑定状态。
     - bond_respawn_timer_：绑定重生定时器，用于在绑定超时后重新连接。
@@ -236,6 +271,8 @@ protected:
 
   // A map of all nodes to be controlled
   // 所有节点的生命周期服务客户端映射表
+  // 在 createLifecycleServiceClients 和 destroyLifecycleServiceClients
+  // 函数中，都使用了节点映射来存储生命周期服务客户端，以便于管理和操作。
   std::map<std::string, std::shared_ptr<nav2_util::LifecycleServiceClient>> node_map_;
 
   // 状态转换标签映射表

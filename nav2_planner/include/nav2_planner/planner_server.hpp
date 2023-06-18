@@ -43,14 +43,17 @@
 
 namespace nav2_planner {
 
+// clang-format off
 /*
   这段代码定义了一个名为PlannerServer的类，该类继承自nav2_util::LifecycleNode。它是一个动作服务器，实现了行为树的ComputePathToPose接口，并托管不同算法的各种插件来计算路径。
 
-  其中，explicit PlannerServer(const rclcpp::NodeOptions& options =
-  rclcpp::NodeOptions())是构造函数，~PlannerServer()是析构函数。PlannerMap是一个类型别名，它定义了一个无序映射表，将字符串映射到全局路径规划器的指针。
+  其中，`explicit PlannerServer(const rclcpp::NodeOptions& options = rclcpp::NodeOptions())`是构造函数，
+  `~PlannerServer()`是析构函数。
+  PlannerMap是一个类型别名，它定义了一个无序映射表，将字符串映射到全局路径规划器的指针。
 
   getPlan()方法接受起始位姿、目标请求和路径规划器ID作为参数，并返回一条路径。
 */
+// clang-format on
 
 /**
  * @class nav2_planner::PlannerServer
@@ -86,9 +89,8 @@ protected:
     定义了五个函数，分别是 on_configure、on_activate、on_deactivate、on_cleanup 和
     on_shutdown。这些函数都是虚函数，需要在派生类中进行实现。
 
-    这些函数都接收一个 rclcpp_lifecycle::State 类型的参数
-    state，表示当前节点的状态。这些函数的返回值类型为
-    nav2_util::CallbackReturn，表示回调函数的返回值。
+    这些函数都接收一个 rclcpp_lifecycle::State 类型的参数 state，表示当前节点的状态。
+    这些函数的返回值类型为 nav2_util::CallbackReturn，表示回调函数的返回值。
 
     这些函数的具体功能如下：
     - on_configure：配置成员变量并初始化规划器。
@@ -97,39 +99,10 @@ protected:
     - on_cleanup：重置成员变量。
     - on_shutdown：在关闭状态下调用。
   */
-  /**
-   * @brief 配置成员变量并初始化规划器
-   * @param state 生命周期节点状态的引用
-   * @return 成功或失败
-   */
   nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State& state) override;
-
-  /**
-   * @brief 激活成员变量
-   * @param state 生命周期节点状态的引用
-   * @return 成功或失败
-   */
   nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State& state) override;
-
-  /**
-   * @brief 停用成员变量
-   * @param state 生命周期节点状态的引用
-   * @return 成功或失败
-   */
   nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& state) override;
-
-  /**
-   * @brief 重置成员变量
-   * @param state 生命周期节点状态的引用
-   * @return 成功或失败
-   */
   nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& state) override;
-
-  /**
-   * @brief 在关闭状态下调用
-   * @param state 生命周期节点状态的引用
-   * @return 成功或失败
-   */
   nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State& state) override;
 
   using ActionToPose = nav2_msgs::action::ComputePathToPose;
@@ -139,19 +112,22 @@ protected:
   using ActionServerToPose = nav2_util::SimpleActionServer<ActionToPose>;
   using ActionServerThroughPoses = nav2_util::SimpleActionServer<ActionThroughPoses>;
 
+  // clang-format off
   /*
-    其中包含了5个函数模板，分别用于检查操作服务器是否有效/活动、检查操作服务器是否有取消请求待处理、等待代价地图使用更新的传感器数据或在清除恢复后重新填充、检查操作服务器是否有预占请求，并用新的预占目标替换目标、从代价地图或消息中获取起始姿态，如果有效。
+    其中包含了5个函数模板，分别用于
+    - 检查操作服务器是否有效/活动、
+    - 检查操作服务器是否有取消请求待处理、
+    - 等待代价地图使用更新的传感器数据或在清除恢复后重新填充、
+    - 检查操作服务器是否有预占请求，并用新的预占目标替换目标、
+    - 从代价地图或消息中获取起始姿态，如果有效。
 
     其中，
-    -
-    函数模板isServerInactive()和isCancelRequested()用于检查操作服务器是否有效/活动以及是否有取消请求待处理，返回成功或失败；
-    -
-    waitForCostmap()函数用于等待代价地图使用更新的传感器数据或在清除恢复后重新填充，阻塞直到为true，没有超时；
-    -
-    getPreemptedGoalIfRequested()函数用于检查操作服务器是否有预占请求，并用新的预占目标替换目标；
-    -
-    getStartPose()函数从代价地图或消息中获取起始姿态，如果有效，返回bool值表示是否成功找到有效的起始姿态。
+    - 函数模板isServerInactive()和isCancelRequested()用于检查操作服务器是否有效/活动以及是否有取消请求待处理，返回成功或失败；
+    - waitForCostmap()函数用于等待代价地图使用更新的传感器数据或在清除恢复后重新填充，阻塞直到为true，没有超时；
+    - getPreemptedGoalIfRequested()函数用于检查操作服务器是否有预占请求，并用新的预占目标替换目标；
+    - getStartPose()函数从代价地图或消息中获取起始姿态，如果有效，返回bool值表示是否成功找到有效的起始姿态。
   */
+  // clang-format on
 
   /**
    * @brief 检查操作服务器是否有效/活动

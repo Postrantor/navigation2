@@ -46,6 +46,7 @@
   - `resume()`：调用恢复服务。
   - `reset()`：调用重置服务。
   - `is_active()`：检查生命周期节点管理器服务器是否处于活动状态。
+
   - `set_initial_pose()`：设置带协方差的初始姿态。
   - `navigate_to_pose()`：将目标姿态发送到 NavigationToPose 动作服务器。
 
@@ -75,30 +76,15 @@ public:
       const std::string& name, std::shared_ptr<rclcpp::Node> parent_node);
 
   // Nav2 生命周期管理器的客户端接口
-  /**
-   * @brief 调用启动服务。
-   * @return 返回 true 或 false。
-   */
+  // 调用启动服务。
   bool startup(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
-  /**
-   * @brief 调用关闭服务。
-   * @return 返回 true 或 false。
-   */
+  // 调用关闭服务。
   bool shutdown(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
-  /**
-   * @brief 调用暂停服务。
-   * @return 返回 true 或 false。
-   */
+  // 调用暂停服务。
   bool pause(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
-  /**
-   * @brief 调用恢复服务。
-   * @return 返回 true 或 false。
-   */
+  // 调用恢复服务。
   bool resume(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
-  /**
-   * @brief 调用重置服务。
-   * @return 返回 true 或 false。
-   */
+  // 调用重置服务。
   bool reset(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
   /**
    * @brief 检查生命周期节点管理器服务器是否处于活动状态。
@@ -106,6 +92,7 @@ public:
    */
   SystemStatus is_active(const std::chrono::nanoseconds timeout = std::chrono::nanoseconds(-1));
 
+  // =========
   // 为便于脚本测试而提供的一些方便方法
   /**
    * @brief 设置带协方差的初始姿态。

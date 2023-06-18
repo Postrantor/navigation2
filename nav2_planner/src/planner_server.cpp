@@ -68,12 +68,12 @@ PlannerServer::PlannerServer(const rclcpp::NodeOptions &options)
   declare_parameter("expected_planner_frequency", 1.0);
 
   // 获取节点参数"planner_plugins"的值
+  // 如果"planner_plugins"的值与"default_ids_"相等，遍历默认规划器名称
   get_parameter("planner_plugins", planner_ids_);
-  if (planner_ids_ == default_ids_) {  // 如果"planner_plugins"的值与"default_ids_"相等
-    for (size_t i = 0; i < default_ids_.size(); ++i) {  // 遍历默认规划器名称
-      declare_parameter(
-          default_ids_[i] + ".plugin",
-          default_types_[i]);  // 为每个默认规划器名称声明一个对应的规划器类型参数
+  if (planner_ids_ == default_ids_) {
+    for (size_t i = 0; i < default_ids_.size(); ++i) {
+      // 为每个默认规划器名称声明一个对应的规划器类型参数
+      declare_parameter(default_ids_[i] + ".plugin", default_types_[i]);
     }
   }
 
@@ -81,8 +81,9 @@ PlannerServer::PlannerServer(const rclcpp::NodeOptions &options)
   costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
       "global_costmap", std::string{get_namespace()},
       "global_costmap",  // 设置节点名称、命名空间和代价地图名称
-      get_parameter("use_sim_time")
-          .as_bool());  // 获取节点参数"use_sim_time"的值，并传递给代价地图ROS节点
+      // 获取节点参数"use_sim_time"的值，并传递给代价地图ROS节点
+      get_parameter("use_sim_time").as_bool());
+
   // 启动一个线程运行代价地图ROS节点
   costmap_thread_ = std::make_unique<nav2_util::NodeThread>(costmap_ros_);
 }

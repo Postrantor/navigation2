@@ -35,12 +35,17 @@ See its [Configuration Guide Page](https://navigation.ros.org/configuration/pack
 ### nav2_lifecycle_manager
 
 > [!NOTE]
-> 这里还是存在 manager 的概念，区别的应该是与 master 不同。
-> manager 可以调用对应的生命周期服务，这个应该是根据系统的策略来安排的，或者是根据具体的业务逻辑实现。考虑实现为类似 QoS 的概念，给出一系列的配置字段，这个是用于定义状态机的；同时类似的给出一些默认的整体配置，是专门针对一些场景的，可以直接调用。
+> 这里看出来的是 manager_client --> manager -> lifecycle_node
+> lifecycle_node 提供不同状态的逻辑
+> manager 提供了一些通用的方法，可以统一管理所有的 lifecycle_node
+> manager_client 可以调用 manager 的接口，实现对 lifecycle_node 的管理
+>
+> 实际中，manager_client 可以是 rviz 中的一些按钮，也可以是一些命令行的输入
+> 这里就应该支持 autostart，即节点自启动
 
 Nav2's lifecycle manager is used to change the states of the lifecycle nodes in order to achieve a controlled _startup_, _shutdown_, _reset_, _pause_, or _resume_ of the navigation stack. The lifecycle manager presents a `lifecycle_manager/manage_nodes` service, from which clients can invoke the startup, shutdown, reset, pause, or resume functions. Based on this service request, the lifecycle manager calls the necessary lifecycle services in the lifecycle managed nodes. Currently, the RVIZ panel uses this `lifecycle_manager/manage_nodes` service when user presses the buttons on the RVIZ panel (e.g.,startup, reset, shutdown, etc.), but it is meant to be called on bringup through a production system application.
 
-> **Nav2 的生命周期管理器用于更改生命周期节点的状态，以实现导航堆栈的受控启动、关闭、重置、暂停或恢复**。生命周期管理器提供了一个`lifecycle_manager/manage_nodes`服务，客户端可以调用启动、关闭、重置、暂停或恢复功能。**根据此服务请求，生命周期管理器(lifecycle manager)会调用生命周期管理节点(lifecycle managed nodes)中必要的生命周期服务**。
+> **Nav2 的生命周期管理器用于更改生命周期节点的状态，以实现导航堆栈的受控启动、关闭、重置、暂停或恢复**。生命周期管理器(lifecycle manager)提供了一个`lifecycle_manager/manage_nodes`服务，客户端(lifecycle manager client)可以调用启动、关闭、重置、暂停或恢复功能。**根据此服务请求，生命周期管理器(lifecycle manager)会调用生命周期管理节点(lifecycle managed nodes)中必要的生命周期服务**。
 > 目前，RVIZ 面板在用户按下 RVIZ 面板上的按钮时(例如启动、重置、关闭等)会调用此`lifecycle_manager/manage_nodes`服务，但它旨在**通过生产系统应用程序在启动时调用**。
 
 In order to start the navigation stack and be able to navigate, the necessary nodes must be configured and activated. Thus, for example when _startup_ is requested from the lifecycle manager's `manage_nodes` service, the lifecycle managers calls _configure()_ and _activate()_ on the lifecycle enabled nodes in the node list. These are all transitioned in ordered groups for bringup transitions, and reverse ordered groups for shutdown transitions.

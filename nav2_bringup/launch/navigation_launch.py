@@ -32,13 +32,13 @@ def generate_launch_description():
 
     namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
-    autostart = LaunchConfiguration('autostart')
     params_file = LaunchConfiguration('params_file')
     use_composition = LaunchConfiguration('use_composition')
     container_name = LaunchConfiguration('container_name')
     container_name_full = (namespace, '/', container_name)
-    use_respawn = LaunchConfiguration('use_respawn')
     log_level = LaunchConfiguration('log_level')
+    use_respawn = LaunchConfiguration('use_respawn') # 没在 lifecycle 中找到
+    autostart = LaunchConfiguration('autostart') # lifecycle_manager
 
     lifecycle_nodes = ['controller_server',
                     'smoother_server',

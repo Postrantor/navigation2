@@ -56,7 +56,8 @@ namespace nav2_lifecycle_manager {
  *   同时还创建了一个diagnostics_updater_对象，用于更新Nav2的健康状态。
  */
 LifecycleManager::LifecycleManager(const rclcpp::NodeOptions& options)
-    : Node("lifecycle_manager", options), diagnostics_updater_(this) {
+    : Node("lifecycle_manager", options),  //
+      diagnostics_updater_(this) {
   RCLCPP_INFO(get_logger(), "Creating");
 
   // 参数化节点名称列表，允许该模块与不同的节点集一起使用
@@ -81,52 +82,63 @@ LifecycleManager::LifecycleManager(const rclcpp::NodeOptions& options)
 
   get_parameter("attempt_respawn_reconnection", attempt_respawn_reconnection_);
 
-  // 创建一个回调组callback_group_
+  // [](D:\Download\Documents\ChatGPT\dialogue\ros\callback_group_20230619.md)
+  // 创建一个回调组callback_group_，并将manager_srv_ 和 is_active_srv 服务添加到 callback_group_
   callback_group_ = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
   // 创建ManageLifecycleNodes服务
   manager_srv_ = create_service<ManageLifecycleNodes>(
       get_name() + std::string("/manage_nodes"),
-      std::bind(&LifecycleManager::managerCallback, this, _1, _2, _3), rclcpp::SystemDefaultsQoS(),
+      std::bind(&LifecycleManager::managerCallback, this, _1, _2, _3),  //
+      rclcpp::SystemDefaultsQoS(),                                      //
       callback_group_);
   // 创建is_active服务
   is_active_srv_ = create_service<std_srvs::srv::Trigger>(
       get_name() + std::string("/is_active"),
-      std::bind(&LifecycleManager::isActiveCallback, this, _1, _2, _3), rclcpp::SystemDefaultsQoS(),
+      std::bind(&LifecycleManager::isActiveCallback, this, _1, _2, _3),  //
+      rclcpp::SystemDefaultsQoS(),                                       //
       callback_group_);
 
+  // clang-format off
+  // [工作流程](D:\Download\Documents\ChatGPT\dialogue\nav2\lifecycle_manager_20230619.md)
   // 初始化转换状态映射表和标签映射表
   transition_state_map_[Transition::TRANSITION_CONFIGURE] = State::PRIMARY_STATE_INACTIVE;
   transition_state_map_[Transition::TRANSITION_CLEANUP] = State::PRIMARY_STATE_UNCONFIGURED;
   transition_state_map_[Transition::TRANSITION_ACTIVATE] = State::PRIMARY_STATE_ACTIVE;
   transition_state_map_[Transition::TRANSITION_DEACTIVATE] = State::PRIMARY_STATE_INACTIVE;
-  transition_state_map_[Transition::TRANSITION_UNCONFIGURED_SHUTDOWN] =
-      State::PRIMARY_STATE_FINALIZED;
+  transition_state_map_[Transition::TRANSITION_UNCONFIGURED_SHUTDOWN] = State::PRIMARY_STATE_FINALIZED;
 
   transition_label_map_[Transition::TRANSITION_CONFIGURE] = std::string("Configuring ");
   transition_label_map_[Transition::TRANSITION_CLEANUP] = std::string("Cleaning up ");
   transition_label_map_[Transition::TRANSITION_ACTIVATE] = std::string("Activating ");
   transition_label_map_[Transition::TRANSITION_DEACTIVATE] = std::string("Deactivating ");
-  transition_label_map_[Transition::TRANSITION_UNCONFIGURED_SHUTDOWN] =
-      std::string("Shutting down ");
+  transition_label_map_[Transition::TRANSITION_UNCONFIGURED_SHUTDOWN] = std::string("Shutting down ");
+  // clang-format on
 
   // 创建一个定时器init_timer_
-  init_timer_ = this->create_wall_timer(0s, [this]() -> void {
-    init_timer_->cancel();
-    createLifecycleServiceClients();  // 创建生命周期服务客户端
-    if (autostart_) {
-      init_timer_ = this->create_wall_timer(
-          0s,
-          [this]() -> void {
-            init_timer_->cancel();
-            startup();  // 启动节点
-          },
-          callback_group_);
-    }
-    auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
-    executor->add_callback_group(callback_group_, get_node_base_interface());
-    service_thread_ = std::make_unique<nav2_util::NodeThread>(executor);  // 创建线程service_thread_
-  });
-  diagnostics_updater_.setHardwareID("Nav2");                             // 设置硬件ID
+  // [](D:\Download\Documents\ChatGPT\dialogue\ros\timer_20230619.md)
+  // 这样做可以实现将回调函数放到callback_group中进行管理
+  init_timer_ = this->create_wall_timer(
+      0s,  //
+      [this]() -> void {
+        init_timer_->cancel();  // 取消定时器，目的是只需要在节点启动时执行一次定时器回调函数。
+        createLifecycleServiceClients();  // 创建生命周期服务客户端
+        if (autostart_) {  // 再次创建一个定时器，其回调函数会启动节点，即调用 `startup()` 函数
+          init_timer_ = this->create_wall_timer(
+              0s,
+              [this]() -> void {
+                init_timer_->cancel();
+                startup();  // 启动节点
+              },
+              callback_group_);
+        }
+        auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+        executor->add_callback_group(callback_group_, get_node_base_interface());
+        service_thread_ =
+            std::make_unique<nav2_util::NodeThread>(executor);  // 创建线程service_thread_
+      });
+
+  // 诊断
+  diagnostics_updater_.setHardwareID("Nav2");                           // 设置硬件ID
   diagnostics_updater_.add(
       "Nav2 Health", this, &LifecycleManager::CreateActiveDiagnostic);  // 添加健康状态更新函数
 }
@@ -141,12 +153,19 @@ LifecycleManager::~LifecycleManager() {
 }
 
 /*
-  上述代码是ROS2项目中navigation2组件中的Lifecycle Manager功能相关的代码。
   其中包含两个函数：managerCallback和isActiveCallback。
 
-  managerCallback函数根据请求中的命令信息，调用对应的生命周期管理函数，并将执行结果写入响应中。具体而言，该函数接受三个参数：请求头指针、请求指针和响应指针。请求指针是ManageLifecycleNodes::Request类型的指针，包含命令信息；响应指针是ManageLifecycleNodes::Response类型的指针，包含执行结果。在函数内部，使用switch语句根据请求中的命令信息，分别调用startup、reset、shutdown、pause和resume等五个生命周期管理函数，并将执行结果写入响应中。
+  managerCallback函数根据请求中的命令信息，调用对应的生命周期管理函数，并将执行结果写入响应中。
+  具体而言，该函数接受三个参数：请求头指针、请求指针和响应指针。
+    - 请求指针是ManageLifecycleNodes::Request类型的指针，包含命令信息；
+    - 响应指针是ManageLifecycleNodes::Response类型的指针，包含执行结果。
+  在函数内部，使用switch语句根据请求中的命令信息，分别调用startup、reset、shutdown、pause和resume等五个生命周期管理函数，并将执行结果写入响应中。
 
-  isActiveCallback函数用于获取系统是否激活的信息，并将其写入响应中。具体而言，该函数接受三个参数：请求头指针、请求指针和响应指针。请求指针是std_srvs::srv::Trigger::Request类型的指针，未使用；响应指针是std_srvs::srv::Trigger::Response类型的指针，包含系统是否激活的信息。在函数内部，将系统是否激活的信息写入响应中。
+  isActiveCallback函数用于获取系统是否激活的信息，并将其写入响应中。
+  具体而言，该函数接受三个参数：请求头指针、请求指针和响应指针。
+    - 请求指针是std_srvs::srv::Trigger::Request类型的指针，未使用；
+    - 响应指针是std_srvs::srv::Trigger::Response类型的指针，包含系统是否激活的信息。
+  在函数内部，将系统是否激活的信息写入响应中。
 */
 
 /**
@@ -194,11 +213,11 @@ void LifecycleManager::isActiveCallback(
 }
 
 /*
-这段代码是 navigation2 组件中 lifecycle_manager 功能相关的代码。其中，CreateActiveDiagnostic
-函数用于创建并返回一个包含当前系统状态的诊断信息；createLifecycleServiceClients
-函数用于创建和初始化生命周期服务客户端；destroyLifecycleServiceClients
-函数用于销毁生命周期服务客户端。在 createLifecycleServiceClients 和 destroyLifecycleServiceClients
-函数中，都使用了节点映射来存储生命周期服务客户端，以便于管理和操作。
+  - CreateActiveDiagnostic 函数用于创建并返回一个包含当前系统状态的诊断信息；
+  - createLifecycleServiceClients 函数用于创建和初始化生命周期服务客户端；
+  - destroyLifecycleServiceClients 函数用于销毁生命周期服务客户端。
+  在 createLifecycleServiceClients 和 destroyLifecycleServiceClients
+  函数中，都使用了节点映射来存储生命周期服务客户端，以便于管理和操作。
 */
 
 /**
@@ -214,6 +233,7 @@ void LifecycleManager::CreateActiveDiagnostic(diagnostic_updater::DiagnosticStat
   }
 }
 
+// 还是有 1:1 的关系？
 /**
  * @brief 创建和初始化生命周期服务客户端
  * @details 遍历节点名称列表，为每个节点创建一个生命周期服务客户端，并将其添加到节点映射中
@@ -237,22 +257,23 @@ void LifecycleManager::destroyLifecycleServiceClients() {
 }
 
 /*
-该函数用于创建节点间的bond连接，具体实现如下：
+  该函数用于创建节点间的bond连接，具体实现如下：
 
-- 首先计算出timeout_ns和timeout_s，分别表示超时时间的纳秒数和秒数。
--
-如果bond_map_中不存在该节点名称，且bond_timeout_的值大于0，则创建一个新的Bond对象，并将其存储在bond_map_中。
-- 然后设置心跳超时时间为timeout_s，心跳周期为0.10秒，并启动Bond连接。
-- 如果连接成功，则返回true，否则返回false。如果连接失败，则输出错误信息并返回false。
+  - 首先计算出timeout_ns和timeout_s，分别表示超时时间的纳秒数和秒数。
+  -
+  如果bond_map_中不存在该节点名称，且bond_timeout_的值大于0，则创建一个新的Bond对象，并将其存储在bond_map_中。
+  - 然后设置心跳超时时间为timeout_s，心跳周期为0.10秒，并启动Bond连接。
+  - 如果连接成功，则返回true，否则返回false。如果连接失败，则输出错误信息并返回false。
 */
 
 /**
  * @brief 创建节点间的bond连接
  * @param node_name 节点名称
  * @details
- * 如果bond_map_中不存在该节点名称，且bond_timeout_的值大于0，则创建一个新的Bond对象，并将其存储在bond_map_中。
- *          然后设置心跳超时时间为timeout_s，心跳周期为0.10秒，并启动Bond连接。如果连接成功，则返回true，否则返回false。
- *          如果连接失败，则输出错误信息并返回false。
+ *     如果bond_map_中不存在该节点名称，且bond_timeout_的值大于0，则创建一个新的Bond对象，并将其存储在bond_map_中。
+ *     然后设置心跳超时时间为timeout_s，心跳周期为0.10秒，并启动Bond连接。
+ *     如果连接成功，则返回true，否则返回false。
+ *     如果连接失败，则输出错误信息并返回false。
  */
 bool LifecycleManager::createBondConnection(const std::string& node_name) {
   // 计算超时时间的纳秒数
@@ -283,39 +304,40 @@ bool LifecycleManager::createBondConnection(const std::string& node_name) {
           node_name.c_str(), timeout_s);
       return false;
     }
-    // 输出连接成功的信息
     RCLCPP_INFO(get_logger(), "Server %s connected with bond.", node_name.c_str());
   }
 
   return true;
 }
 
+// 在节点处于不同的生命周期状态中，是否判断liveliness也不同，这里可以详细参看 bond 的设计
 /*
-该代码段是在 ROS2 项目中 Navigation2 组件的 Lifecycle Manager 功能相关的代码。LifecycleManager 类是
-Navigation2 中的一个重要组件，用于管理节点的生命周期状态。changeStateForNode 函数是 LifecycleManager
-类的一个公共函数，用于改变指定节点的生命周期状态。
+  changeStateForNode 函数是 LifecycleManager 类的一个公共函数，用于改变指定节点的生命周期状态。
 
-该函数首先调用 message
-函数打印出正在执行的生命周期转换和节点名称。然后检查是否能够改变指定节点的生命周期状态，如果不能，则打印错误信息并返回
-false。如果可以改变节点的生命周期状态，则根据生命周期转换标识符执行不同的操作：如果是激活转换，则创建一个新的
-Bond 连接；如果是停用转换，则从 Bond 映射中删除节点名称。最后返回 true
-表示成功改变了节点的生命周期状态。
+  该函数首先调用 message 函数打印出正在执行的生命周期转换和节点名称。
+  然后检查是否能够改变指定节点的生命周期状态，如果不能，则打印错误信息并返回 false。
+  如果可以改变节点的生命周期状态，则根据生命周期转换标识符执行不同的操作：
+    如果是激活转换，则创建一个新的 Bond 连接；
+    如果是停用转换，则从 Bond 映射中删除节点名称。
+  最后返回 true 表示成功改变了节点的生命周期状态。
 */
-
 /**
  * @brief LifecycleManager::changeStateForNode 函数用于改变指定节点的生命周期状态。
  * @param node_name 节点名称。
  * @param transition 生命周期转换标识符。
  * @return 如果成功改变了节点的生命周期状态，则返回 true，否则返回 false。
- * @details 该函数首先调用 message
- * 函数打印出正在执行的生命周期转换和节点名称。然后检查是否能够改变指定节点的生命周期状态，如果不能，则打印错误信息并返回
- * false。如果可以改变节点的生命周期状态，则根据生命周期转换标识符执行不同的操作：如果是激活转换，则创建一个新的
- * Bond 连接；如果是停用转换，则从 Bond 映射中删除节点名称。最后返回 true
- * 表示成功改变了节点的生命周期状态。
+ * @details
+ *    该函数首先调用 message 函数打印出正在执行的生命周期转换和节点名称。
+ *    然后检查是否能够改变指定节点的生命周期状态，如果不能，则打印错误信息并返回
+ *    false。
+ *    如果可以改变节点的生命周期状态，则根据生命周期转换标识符执行不同的操作：如果是激活转换，则创建一个新的
+ *    Bond 连接；如果是停用转换，则从 Bond 映射中删除节点名称。
+ *    最后返回 true 表示成功改变了节点的生命周期状态。
  */
 bool LifecycleManager::changeStateForNode(const std::string& node_name, std::uint8_t transition) {
   message(transition_label_map_[transition] + node_name);
 
+  // 这里就用到了两个方法，实际上分别对应两个服务
   // 检查是否能够改变指定节点的生命周期状态
   if (!node_map_[node_name]->change_state(transition) ||
       !(node_map_[node_name]->get_state() == transition_state_map_[transition])) {
@@ -333,15 +355,20 @@ bool LifecycleManager::changeStateForNode(const std::string& node_name, std::uin
   return true;
 }
 
-/*
-功能总结：该函数实现了对一组节点进行生命周期状态转换的操作。通过遍历所有节点，并调用
-changeStateForNode 函数来改变每个节点的生命周期状态。如果某个节点改变失败并且不是强制改变，则返回
-false；如果所有节点都成功改变状态，则返回 true。
+// 这里给出了一个 hard_change
+// 的关系，当维护一组节点的时候，如果其中某一个转换状态失败，是否继续转换其他节点
+// 相对于级联节点的设计，这个可能是表示一种节点间没有强相关性质？
+// 这样考虑也是有存在的意义
+/**
+  功能总结：该函数实现了对一组节点进行生命周期状态转换的操作。
+  通过遍历所有节点，并调用 changeStateForNode
+  函数来改变每个节点的生命周期状态。如果某个节点改变失败并且不是强制改变，则返回
+  false；如果所有节点都成功改变状态，则返回 true。
 
-其中，hard_change 参数表示是否强制改变，即使某个节点失败了也会继续执行。transition
-参数表示生命周期状态转换类型，包括 TRANSITION_CONFIGURE 和 TRANSITION_ACTIVATE
-两种情况。如果是前者，则按照正常顺序遍历所有节点；如果是后者，则按照相反的顺序遍历所有节点。在遍历过程中，如果某个节点改变失败，则根据
-hard_change 参数决定是否继续执行下一个节点。如果所有节点都成功改变状态，则返回 true。
+  其中，hard_change 参数表示是否强制改变，即使某个节点失败了也会继续执行。transition
+  参数表示生命周期状态转换类型，包括 TRANSITION_CONFIGURE 和 TRANSITION_ACTIVATE
+  两种情况。如果是前者，则按照正常顺序遍历所有节点；如果是后者，则按照相反的顺序遍历所有节点。在遍历过程中，如果某个节点改变失败，则根据
+  hard_change 参数决定是否继续执行下一个节点。如果所有节点都成功改变状态，则返回 true。
 */
 
 /**
@@ -366,7 +393,6 @@ bool LifecycleManager::changeStateForAllNodes(std::uint8_t transition, bool hard
           return false;
         }
       } catch (const std::runtime_error& e) {
-        // 输出错误信息
         RCLCPP_ERROR(
             get_logger(), "Failed to change state for node: %s. Exception: %s.", node_name.c_str(),
             e.what());
@@ -374,6 +400,7 @@ bool LifecycleManager::changeStateForAllNodes(std::uint8_t transition, bool hard
       }
     }
   } else {
+    // 这个实现上可以，对于一组节点进行启动的时候和取消启动的时候区分了一个正序和倒序
     // 反向遍历所有节点，按照相反的顺序依次改变其生命周期状态
     std::vector<std::string>::reverse_iterator rit;
     for (rit = node_names_.rbegin(); rit != node_names_.rend(); ++rit) {
@@ -384,7 +411,6 @@ bool LifecycleManager::changeStateForAllNodes(std::uint8_t transition, bool hard
           return false;
         }
       } catch (const std::runtime_error& e) {
-        // 输出错误信息
         RCLCPP_ERROR(
             get_logger(), "Failed to change state for node: %s. Exception: %s.", (*rit).c_str(),
             e.what());
@@ -396,16 +422,15 @@ bool LifecycleManager::changeStateForAllNodes(std::uint8_t transition, bool hard
 }
 
 /*
-其中包含了三个函数：shutdownAllNodes()、startup()和shutdown()。
+  其中包含了三个函数：shutdownAllNodes()、startup()和shutdown()。
 
-shutdownAllNodes()函数通过调用三个不同的状态转换函数，对所有节点进行关闭操作。
-startup()函数则是对所有被管理的节点进行配置和激活操作。如果有任何一个节点无法完成这两个操作，则返回false。如果所有节点都成功启动，则返回true。
-最后，shutdown()函数对所有被管理的节点进行关闭操作，并销毁生命周期服务客户端。如果所有节点都成功关闭，则返回true。
+  shutdownAllNodes()函数通过调用三个不同的状态转换函数，对所有节点进行关闭操作。
+  startup()函数则是对所有被管理的节点进行配置和激活操作。如果有任何一个节点无法完成这两个操作，则返回false。如果所有节点都成功启动，则返回true。
+  最后，shutdown()函数对所有被管理的节点进行关闭操作，并销毁生命周期服务客户端。如果所有节点都成功关闭，则返回true。
 */
 
 /**
  * @brief 关闭所有节点
- * @param 无
  * @details 使用三个不同的状态转换函数对所有节点进行关闭操作
  */
 void LifecycleManager::shutdownAllNodes() {
@@ -417,11 +442,11 @@ void LifecycleManager::shutdownAllNodes() {
 
 /**
  * @brief 启动所有被管理的节点
- * @param 无
  * @return bool 返回启动是否成功
  * @details
- * 对所有被管理的节点进行配置和激活操作，如果有任何一个节点无法完成这两个操作，则返回false。
- *          如果所有节点都成功启动，则返回true。
+ *    对所有被管理的节点进行配置和激活操作，
+ *    如果有任何一个节点无法完成这两个操作，则返回false。
+ *    如果所有节点都成功启动，则返回true。
  */
 bool LifecycleManager::startup() {
   message("Starting managed nodes bringup...");
@@ -438,10 +463,9 @@ bool LifecycleManager::startup() {
 
 /**
  * @brief 关闭所有被管理的节点
- * @param 无
  * @return bool 返回关闭是否成功
  * @details
- * 对所有被管理的节点进行关闭操作，并销毁生命周期服务客户端。如果所有节点都成功关闭，则返回true。
+ *    对所有被管理的节点进行关闭操作，并销毁生命周期服务客户端。如果所有节点都成功关闭，则返回true。
  */
 bool LifecycleManager::shutdown() {
   system_active_ = false;
@@ -455,27 +479,29 @@ bool LifecycleManager::shutdown() {
 }
 
 /*
-这段代码是在ROS2项目中navigation2组件中lifecycle_manager功能相关的代码。其中包含了两个函数reset和pause，用于重置和暂停lifecycle
-manager中的所有节点状态。
+  其中包含了两个函数reset和pause，用于重置和暂停lifecycle manager中的所有节点状态。
 
-reset函数首先将system_active_设置为false，销毁bond
-timer，然后对所有的节点进行反向转换（即从activate到deactivate，再到cleanup）。如果在转换过程中出现错误，则根据hard_reset参数判断是否继续执行。如果不是硬重置，则输出错误信息并返回false。最后输出“Managed
-nodes have been reset”并返回true。
+  reset函数首先将system_active_设置为false，销毁bond timer，
+  然后对所有的节点进行反向转换（即从activate到deactivate，再到cleanup）。
+  如果在转换过程中出现错误，则根据hard_reset参数判断是否继续执行。
+  如果不是硬重置，则输出错误信息并返回false。
+  最后输出“Managed nodes have been reset”并返回true。
 
-pause函数将system_active_设置为false，销毁bond
-timer，然后对所有的节点进行deactivate操作。如果在转换过程中出现错误，则输出错误信息并返回false。最后输出“Managed
-nodes have been paused”并返回true。
+  pause函数将system_active_设置为false，销毁bond timer，
+  然后对所有的节点进行deactivate操作。
+  如果在转换过程中出现错误，则输出错误信息并返回false。
+  最后输出“Managed nodes have been paused”并返回true。
 */
 
 /**
  * @brief 重置lifecycle manager中的所有节点状态
  * @param hard_reset 是否进行硬重置
  * @details
- * 首先将system_active_设置为false，销毁bond timer。
- * 然后对所有的节点进行反向转换（即从activate到deactivate，再到cleanup）。
- * 如果在转换过程中出现错误，则根据hard_reset参数判断是否继续执行。
- * 如果不是硬重置，则输出错误信息并返回false。
- * 最后输出“Managed nodes have been reset”并返回true。
+ *    首先将system_active_设置为false，销毁bond timer。
+ *    然后对所有的节点进行反向转换（即从activate到deactivate，再到cleanup）。
+ *    如果在转换过程中出现错误，则根据hard_reset参数判断是否继续执行。
+ *    如果不是硬重置，则输出错误信息并返回false。
+ *    最后输出“Managed nodes have been reset”并返回true。
  */
 bool LifecycleManager::reset(bool hard_reset) {
   system_active_ = false;
@@ -498,10 +524,10 @@ bool LifecycleManager::reset(bool hard_reset) {
 /**
  * @brief 暂停lifecycle manager中的所有节点状态
  * @details
- * 将system_active_设置为false，销毁bond timer。
- * 然后对所有的节点进行deactivate操作。
- * 如果在转换过程中出现错误，则输出错误信息并返回false。
- * 最后输出“Managed nodes have been paused”并返回true。
+ *    将system_active_设置为false，销毁bond timer。
+ *    然后对所有的节点进行deactivate操作。
+ *    如果在转换过程中出现错误，则输出错误信息并返回false。
+ *    最后输出“Managed nodes have been paused”并返回true。
  */
 bool LifecycleManager::pause() {
   system_active_ = false;
@@ -517,30 +543,17 @@ bool LifecycleManager::pause() {
   return true;
 }
 
-/*
-代码段的功能是在 navigation2 组件中 lifecycle_manager 功能相关的代码。其中 LifecycleManager
-类是一个节点管理器，用于管理所有被它所创建的节点。resume()
-函数用于恢复所有被管理的节点，即对所有被管理的节点执行激活操作，如果有任何一个节点无法激活，则返回
-false；否则将系统状态设置为激活状态，并创建 bond 定时器。createBondTimer() 函数用于创建 bond
-定时器，如果 bond 超时时间小于等于 0，则直接返回；否则创建定时器，每隔 200ms 执行一次
-checkBondConnections 函数。destroyBondTimer() 函数用于销毁 bond 定时器，如果 bond
-定时器存在，则取消定时器并将其重置为空。
-*/
-
 /**
  * @brief LifecycleManager::resume() 恢复所有被管理的节点
  * @details 对所有被管理的节点执行激活操作，如果操作失败，则返回 false。
- *
  * @return true 如果所有节点都成功激活
  * @return false 如果有任何一个节点无法激活
  */
 bool LifecycleManager::resume() {
   message("Resuming managed nodes...");  // 输出日志信息，表示正在恢复被管理的节点
-  if (!changeStateForAllNodes(Transition::TRANSITION_ACTIVATE)) {  // 对所有被管理的节点执行激活操作
-    RCLCPP_ERROR(
-        get_logger(),
-        "Failed to resume nodes: aborting resume");  // 如果有任何一个节点无法激活，则输出错误日志信息并返回
-                                                     // false
+  // 对所有被管理的节点执行激活操作
+  if (!changeStateForAllNodes(Transition::TRANSITION_ACTIVATE)) {
+    RCLCPP_ERROR(get_logger(), "Failed to resume nodes: aborting resume");
     return false;
   }
 
@@ -550,13 +563,20 @@ bool LifecycleManager::resume() {
   return true;                          // 返回 true 表示所有节点都已经成功激活
 }
 
+/*
+  - createBondTimer() 函数用于创建 bond 定时器，如果 bond 超时时间小于等于
+  0，则直接返回；否则创建定时器，每隔 200ms 执行一次 checkBondConnections 函数。
+  - destroyBondTimer() 函数用于销毁 bond 定时器，如果 bond 定时器存在，则取消定时器并将其重置为空。
+*/
+
 /**
  * @brief LifecycleManager::createBondTimer() 创建 bond 定时器
  * @details 如果 bond 超时时间小于等于 0，则直接返回；否则创建定时器，每隔 200ms 执行一次
  * checkBondConnections 函数。
  */
 void LifecycleManager::createBondTimer() {
-  if (bond_timeout_.count() <= 0) {  // 如果 bond 超时时间小于等于 0，则直接返回
+  // 如果 bond 超时时间小于等于 0，则直接返回
+  if (bond_timeout_.count() <= 0) {
     return;
   }
 
@@ -579,11 +599,11 @@ void LifecycleManager::destroyBondTimer() {
 }
 
 /*
-这段代码是在ROS2项目中navigation2组件中lifecycle_manager功能相关的代码。其中包含了两个函数：onRclPreshutdown()和registerRclPreshutdownCallback()。
+  其中包含了两个函数：onRclPreshutdown()和registerRclPreshutdownCallback()。
 
-onRclPreshutdown()函数是在ROS2系统即将关闭时，LifecycleManager组件会调用该函数进行清理工作。具体来说，它会销毁bond定时器，并清空节点名称列表、节点映射表和bond映射表。
+  onRclPreshutdown()函数是在ROS2系统即将关闭时，LifecycleManager组件会调用该函数进行清理工作。具体来说，它会销毁bond定时器，并清空节点名称列表、节点映射表和bond映射表。
 
-registerRclPreshutdownCallback()函数则是注册LifecycleManager组件的onRclPreshutdown回调函数，当ROS2系统即将关闭时会被调用。在函数中，它会添加pre-shutdown回调函数，以便在ROS2系统即将关闭时执行相应的清理工作。
+  registerRclPreshutdownCallback()函数则是注册LifecycleManager组件的onRclPreshutdown回调函数，当ROS2系统即将关闭时会被调用。在函数中，它会添加pre-shutdown回调函数，以便在ROS2系统即将关闭时执行相应的清理工作。
 */
 
 /**
@@ -599,14 +619,10 @@ void LifecycleManager::onRclPreshutdown() {
    * Dropping the bond map is what we really need here, but we drop the others
    * to prevent the bond map being used. Likewise, squash the service thread.
    */
-  // 销毁bond定时器
-  service_thread_.reset();
-  // 清空节点名称列表
-  node_names_.clear();
-  // 清空节点映射表
-  node_map_.clear();
-  // 清空bond映射表
-  bond_map_.clear();
+  service_thread_.reset();  // 销毁bond定时器
+  node_names_.clear();      // 清空节点名称列表
+  node_map_.clear();        // 清空节点映射表
+  bond_map_.clear();        // 清空bond映射表
 }
 
 /**
@@ -621,13 +637,13 @@ void LifecycleManager::registerRclPreshutdownCallback() {
 }
 
 /*
-该代码段是 navigation2 组件中 lifecycle_manager 功能相关的代码。该函数用于检查所有节点与
-LifecycleManager 的 bond 连接状态，如果有节点连接失败，则关闭所有相关节点，并初始化 bond
-重连定时器以便在最大超时时间内检查服务器是否重新上线。
+  该函数用于检查所有节点与 LifecycleManager 的 bond
+  连接状态，如果有节点连接失败，则关闭所有相关节点，并初始化 bond
+  重连定时器以便在最大超时时间内检查服务器是否重新上线。
 
-具体实现上，首先判断系统是否激活、rclcpp::ok() 是否返回 false 或 bond_map
-是否为空，如果是则直接返回。然后遍历所有节点，检查其 bond 连接状态，如果某个节点的 bond
-连接已断开，则进行处理：关闭所有相关节点、清空 bond_map、初始化 bond 重连定时器。
+  具体实现上，首先判断系统是否激活、rclcpp::ok() 是否返回 false 或 bond_map
+  是否为空，如果是则直接返回。然后遍历所有节点，检查其 bond 连接状态，如果某个节点的 bond
+  连接已断开，则进行处理：关闭所有相关节点、清空 bond_map、初始化 bond 重连定时器。
 */
 
 /**
@@ -662,7 +678,9 @@ void LifecycleManager::checkBondConnections() {
       // 初始化 bond 重连定时器，以便在最大超时时间内检查服务器是否重新上线
       if (attempt_respawn_reconnection_) {
         bond_respawn_timer_ = this->create_wall_timer(
-            1s, std::bind(&LifecycleManager::checkBondRespawnConnection, this), callback_group_);
+            1s,                                                              //
+            std::bind(&LifecycleManager::checkBondRespawnConnection, this),  //
+            callback_group_);
       }
       return;
     }
@@ -670,15 +688,21 @@ void LifecycleManager::checkBondConnections() {
 }
 
 /*
-功能梳理：该函数用于检查重新连接的绑定。首先判断是否是第一次尝试重新生成，如果是，则启动重新生成的最大持续时间；然后检查绑定失败后的活动连接数，如果所有连接都处于活动状态，则杀死计时器并将系统重新转换为活动状态；否则，检查是否已经达到了最大超时时间，如果是，则输出失败信息。
+  功能梳理：该函数用于检查重新连接的绑定。
+  首先判断是否是第一次尝试重新生成，如果是，则启动重新生成的最大持续时间；
+  然后检查绑定失败后的活动连接数，如果所有连接都处于活动状态，则杀死计时器并将系统重新转换为活动状态；
+  否则，检查是否已经达到了最大超时时间，如果是，则输出失败信息。
 */
 
 /**
  * @brief 检查重新连接的绑定
- * @param 无
- * @details 如果在重新生成时第一次尝试，则启动重新生成的最大持续时间。
- *          注意：system_active_被反转，因为这应该是一个失败条件。如果另一个外部用户再次激活系统，则不应处理。
- *          检查绑定失败后的活动连接数。如果所有连接都处于活动状态，请杀死计时器并将系统重新转换为活动状态。否则，检查是否已经达到了最大超时时间。
+ * @details
+ *    如果在重新生成时第一次尝试，则启动重新生成的最大持续时间。
+ *    注意：system_active_被反转，因为这应该是一个失败条件。
+ *    如果另一个外部用户再次激活系统，则不应处理。
+ *    检查绑定失败后的活动连接数。
+ *    - 如果所有连接都处于活动状态，请杀死计时器并将系统重新转换为活动状态。
+ *    - 否则，检查是否已经达到了最大超时时间。
  */
 void LifecycleManager::checkBondRespawnConnection() {
   // 如果在重新生成时第一次尝试，则启动重新生成的最大持续时间。
